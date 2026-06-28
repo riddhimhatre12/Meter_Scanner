@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}Energy Efficiency Tips{% endblock %}
+
+{% block content %}
+<style>
+.tips-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+.tip-card {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #1cc88a;
+    transition: transform 0.3s ease;
+}
+
+.tip-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.tip-card.high-impact {
+    border-left-color: #e74a3b;
+}
+
+.tip-card.medium-impact {
+    border-left-color: #f6c23e;
+}
+
+.tip-card.low-impact {
+    border-left-color: #1cc88a;
+}
+
+.difficulty-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.difficulty-easy {
+    background: #d4edda;
+    color: #155724;
+}
+
+.difficulty-medium {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.difficulty-hard {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.savings-amount {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #1cc88a;
+}
+
+.category-filter {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.filter-btn {
+    margin: 0.25rem;
+    border-radius: 20px;
+}
+
+.filter-btn.active {
+    background: #4e73df;
+    color: white;
+}
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.stat-label {
+    opacity: 0.9;
+    font-size: 0.9rem;
+}
+</style>
+
+<div class="tips-container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-4">💡 Energy Efficiency Tips</h2>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-value">{{ total_tips }}</div>
+            <div class="stat-label">Total Tips Available</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">₹{{ max_savings }}</div>
+            <div class="stat-label">Max Monthly Savings</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ avg_savings }}</div>
+            <div class="stat-label">Average Savings</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ implemented_count }}</div>
+            <div class="stat-label">Tips Implemented</div>
+        </div>
+    </div>
+
+    <!-- Category Filter -->
+    <div class="category-filter">
+        <h5 class="mb-3">Filter by Category</h5>
+        <div class="d-flex flex-wrap">
+            <button class="btn btn-outline-primary filter-btn active" onclick="filterTips('all')">All Tips</button>
+            <button class="btn btn-outline-primary filter-btn" onclick="filterTips('lighting')">Lighting</button>
+            <button class="btn btn-outline-primary filter-btn" onclick="filterTips('cooling')">Cooling</button>
+            <button class="btn btn-outline-primary filter-btn" onclick="filterTips('appliances')">Appliances</button>
+            <button class="btn btn-outline-primary filter-btn" onclick="filterTips('water')">Water Heating</button>
+            <button class="btn btn-outline-primary filter-btn" onclick="filterTips('insulation')">Insulation</button>
+            <button class="btn btn-outline-primary filter-btn" onclick="filterTips('timing')">Usage Timing</button>
+        </div>
+    </div>
+
+    <!-- Tips Grid -->
+    <div class="row" id="tipsContainer">
+        {% for tip in energy_tips %}
+        <div class="col-lg-6 col-xl-4 tip-item" data-category="{{ tip.tip_category }}">
+            <div class="tip-card {{ 'high-impact' if tip.potential_savings > 20 else 'medium-impact' if tip.potential_savings > 10 else 'low-impact' }}">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5>{{ tip.tip_title }}</h5>
+                    <span class="difficulty-badge difficulty-{{ tip.difficulty_level }}">
+                        {{ tip.difficulty_level|title }}
+                    </span>
+                </div>
+                
+                <p class="mb-3">{{ tip.tip_description }}</p>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Potential Savings:</small>
+                        <div class="savings-amount">₹{{ tip.potential_savings|int }}/month</div>
+                    </div>
+                    <button class="btn btn-sm btn-success" onclick="implementTip({{ tip.id }})">
+                        <i class="bi bi-check-circle"></i> Implement
+                    </button>
+                </div>
+                
+                <div class="mt-3">
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" style="width: {{ tip.potential_savings * 4 }}%"></div>
+                    </div>
+                    <small class="text-muted">Impact Level: {{ 'High' if tip.potential_savings > 20 else 'Medium' if tip.potential_savings > 10 else 'Low' }}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Personalized Recommendations -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="tip-card" style="border-left-color: #4e73df; background: linear-gradient(135deg, #f8f9fc 0%, #e9ecef 100%);">
+                <h4 class="mb-3">🎯 Personalized Recommendations Based on Your Usage</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Your Usage Pattern Analysis:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-arrow-up text-danger"></i> Peak usage during 6PM-10PM</li>
+                            <li><i class="bi bi-droplet text-info"></i> Higher consumption in summer months</li>
+                            <li><i class="bi bi-lightning text-warning"></i> Above-average daily usage</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Recommended Actions:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check-circle text-success"></i> Shift heavy appliances to off-peak hours</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Optimize AC temperature settings</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Consider energy-efficient appliances</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <button class="btn btn-primary" onclick="generatePersonalizedPlan()">
+                        <i class="bi bi-magic"></i> Generate Personalized Savings Plan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function filterTips(category) {
+    const tips = document.querySelectorAll('.tip-item');
+    const buttons = document.querySelectorAll('.filter-btn');
+    
+    // Update active button
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Filter tips
+    tips.forEach(tip => {
+        if (category === 'all' || tip.dataset.category === category) {
+            tip.style.display = 'block';
+        } else {
+            tip.style.display = 'none';
+        }
+    });
+}
+
+function implementTip(tipId) {
+    fetch('/api/tips/implement', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ tip_id: tipId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Tip marked as implemented! Great job saving energy!', 'success');
+            // Update button state
+            event.target.innerHTML = '<i class="bi bi-check-circle-fill"></i> Implemented';
+            event.target.disabled = true;
+            event.target.classList.remove('btn-success');
+            event.target.classList.add('btn-secondary');
+        } else {
+            showNotification('Error implementing tip', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error implementing tip', 'error');
+    });
+}
+
+function generatePersonalizedPlan() {
+    showNotification('Generating your personalized savings plan...', 'info');
+    
+    fetch('/api/tips/personalized-plan', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Personalized plan generated! Check your email for details.', 'success');
+        } else {
+            showNotification('Error generating plan', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error generating plan', 'error');
+    });
+}
+
+function showNotification(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.querySelector('.tips-container').insertBefore(alertDiv, document.querySelector('.tips-container').firstChild);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

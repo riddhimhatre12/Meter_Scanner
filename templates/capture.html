@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}Capture Reading{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center mb-0">Capture Meter Reading</h3>
+            </div>
+            <div class="card-body">
+                <div id="status" class="alert" style="display: none;"></div>
+                
+                <div id="camera-container" class="text-center mb-4">
+                    <div class="camera-frame">
+                        <img src="{{ url_for('video_feed') }}" class="img-fluid rounded" alt="Live Camera Feed">
+                    </div>
+                </div>
+
+                <div id="instructions" class="alert alert-info mb-4">
+                    <h5 class="alert-heading">Instructions:</h5>
+                    <ol class="mb-0">
+                        <li>Position your meter within the green rectangle</li>
+                        <li>Ensure good lighting and clear visibility of numbers</li>
+                        <li>Keep the camera steady</li>
+                        <li>Press and hold spacebar for 3 seconds to capture</li>
+                    </ol>
+                </div>
+
+                <div id="countdown" class="text-center mb-4" style="display: none;">
+                    <div class="alert alert-warning">
+                        <div class="progress mb-2">
+                            <div id="capture-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <h2 class="countdown-text mb-0">Hold steady for <span id="timer">3</span> seconds</h2>
+                        <p class="mb-0">Keep holding spacebar</p>
+                    </div>
+                </div>
+
+                <div id="result" class="text-center mb-4" style="display: none;">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Captured Successfully!</h5>
+                        </div>
+                        <div class="card-body">
+                            <img id="captured-image" class="img-fluid mb-3 rounded" style="max-width: 100%; height: auto;">
+                            <div id="meter-number-container" class="alert alert-info">
+                                <h5>Detected Reading:</h5>
+                                <p id="meter-number" class="display-4 mb-0">-</p>
+                            </div>
+                            <div id="digits-detail" class="mt-2" style="display:none;">
+                                <span class="badge bg-secondary me-2" id="digit-count-badge"></span>
+                                <div id="digit-list" class="mt-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <button id="captureBtn" class="btn btn-primary btn-lg me-2">
+                        <i class="bi bi-camera me-2"></i>Capture
+                    </button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-lg">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.camera-frame {
+    max-width: 800px;
+    margin: 0 auto;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #000;
+}
+
+.camera-frame img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+#countdown .alert {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+#result .card {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.progress {
+    height: 10px;
+    border-radius: 5px;
+}
+</style>
+
+<!-- Include Font Awesome for icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
+<script>
+let captureStartTime = null;
+let captureTimer = null;
+const CAPTURE_DURATION = 3000; // 3 seconds in milliseconds
+
+document.addEventListener('keydown', function(event) {
+    if (event.code === 'Space' && !captureStartTime && document.getElementById('result').style.display === 'none') {
+        event.preventDefault(); // Prevent page scrolling
+        startCapture();
+    }
+});
+
+document.addEventListener('keyup', function(event) {
+    if (event.code === 'Space') {
+        cancelCapture();
+    }
+});
+
+function startCapture() {
+    console.log('startCapture called');
+    const countdown = document.getElementById('countdown');
+    const timer = document.getElementById('timer');
+    const progressBar = document.getElementById('capture-progress');
+    const instructions = document.getElementById('instructions');
+    const status = document.getElementById('status');
+    const captureBtn = document.getElementById('captureBtn');
+    
+    if (!countdown || !timer || !progressBar || !instructions || !status || !captureBtn) {
+        console.error('Required DOM elements not found');
+        return;
+    }
+    
+    // Reset displays
+    status.style.display = 'none';
+    countdown.style.display = 'block';
+    instructions.style.display = 'none';
+    if (captureBtn) captureBtn.disabled = true;
+    
+    captureStartTime = Date.now();
+    console.log('Capture started at:', captureStartTime);
+    
+    // Start countdown
+    captureTimer = setInterval(() => {
+        const elapsed = Date.now() - captureStartTime;
+        const remaining = Math.ceil((CAPTURE_DURATION - elapsed) / 1000);
+        const progress = (elapsed / CAPTURE_DURATION) * 100;
+        
+        timer.textContent = remaining;
+        progressBar.style.width = `${progress}%`;
+        
+        if (elapsed >= CAPTURE_DURATION) {
+            completeCapture();
+        }
+    }, 50); // Update every 50ms for smooth progress bar
+}
+
+function cancelCapture() {
+    if (captureStartTime) {
+        clearInterval(captureTimer);
+        captureStartTime = null;
+        
+        const countdown = document.getElementById('countdown');
+        const instructions = document.getElementById('instructions');
+        const progressBar = document.getElementById('capture-progress');
+        const captureBtn = document.getElementById('captureBtn');
+        
+        countdown.style.display = 'none';
+        instructions.style.display = 'block';
+        progressBar.style.width = '0%';
+        if (captureBtn) captureBtn.disabled = false;
+    }
+}
+
+function completeCapture() {
+    clearInterval(captureTimer);
+    captureStartTime = null;
+    
+    const countdown = document.getElementById('countdown');
+    const result = document.getElementById('result');
+    const status = document.getElementById('status');
+    const capturedImage = document.getElementById('captured-image');
+    const cameraContainer = document.getElementById('camera-container');
+    const meterNumber = document.getElementById('meter-number');
+    const progressBar = document.getElementById('capture-progress');
+    const captureBtn = document.getElementById('captureBtn');
+    
+    countdown.style.display = 'none';
+    progressBar.style.width = '0%';
+    
+    // Take photo
+    fetch('/take_photo', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            status.className = 'alert alert-success';
+            status.textContent = data.message;
+            capturedImage.src = '/static/uploads/' + data.image_path;
+            meterNumber.textContent = data.meter_number || 'No number detected';
+            cameraContainer.style.display = 'none';
+            result.style.display = 'block';
+
+            // Show digits detail if present
+            const digitsDetail = document.getElementById('digits-detail');
+            const digitCountBadge = document.getElementById('digit-count-badge');
+            const digitList = document.getElementById('digit-list');
+            if (data.digit_count && data.digits && Array.isArray(data.digits)) {
+                digitCountBadge.textContent = `Digits detected: ${data.digit_count}`;
+                digitList.innerHTML = data.digits.map(d => `<span class='badge bg-info text-dark me-1'>${d}</span>`).join('');
+                digitsDetail.style.display = 'block';
+            } else {
+                digitsDetail.style.display = 'none';
+            }
+        } else {
+            status.className = 'alert alert-danger';
+            status.textContent = data.error || 'Failed to capture image';
+            instructions.style.display = 'block';
+        }
+        status.style.display = 'block';
+        if (captureBtn) captureBtn.disabled = false;
+    })
+    .catch(error => {
+        status.className = 'alert alert-danger';
+        status.textContent = 'Error: ' + error;
+        status.style.display = 'block';
+        instructions.style.display = 'block';
+        if (captureBtn) captureBtn.disabled = false;
+    });
+}
+
+// Close camera when leaving the page
+window.addEventListener('beforeunload', function() {
+    fetch('/close_camera', {
+        method: 'POST'
+    });
+});
+
+// Button click should trigger the same 3-second capture flow
+document.addEventListener('DOMContentLoaded', function() {
+    const captureBtn = document.getElementById('captureBtn');
+    if (captureBtn) {
+        captureBtn.addEventListener('click', function() {
+            console.log('Capture button clicked');
+            if (!captureStartTime && document.getElementById('result').style.display === 'none') {
+                console.log('Starting capture...');
+                startCapture();
+            } else {
+                console.log('Capture already in progress or result already shown');
+            }
+        });
+    } else {
+        console.error('Capture button not found!');
+    }
+});
+</script>
+{% endblock %}

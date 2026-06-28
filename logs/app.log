@@ -1,0 +1,598 @@
+2025-10-06 18:01:01,239 INFO meter_scanner: Application started. Database initialized.
+2025-10-06 18:01:01,250 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-10-06 18:01:02,418 INFO meter_scanner: Application started. Database initialized.
+2025-10-06 18:01:02,418 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-10-14 18:02:32,738 INFO meter_scanner: Application started. Database initialized.
+2025-10-14 18:02:32,742 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-10-14 18:02:35,109 INFO meter_scanner: Application started. Database initialized.
+2025-10-14 18:02:35,111 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-06 12:02:09,093 INFO meter_scanner: Application started. Database initialized.
+2025-12-06 12:02:09,105 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-06 12:02:12,930 INFO meter_scanner: Application started. Database initialized.
+2025-12-06 12:02:12,932 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-06 12:02:17,305 INFO meter_scanner: Application started. Database initialized.
+2025-12-06 12:02:17,305 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-06 12:02:20,741 INFO meter_scanner: Application started. Database initialized.
+2025-12-06 12:02:20,743 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-06 12:02:24,231 INFO meter_scanner: Application started. Database initialized.
+2025-12-06 12:02:24,232 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-06 12:02:29,925 INFO meter_scanner: Application started. Database initialized.
+2025-12-06 12:02:29,927 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-06 12:02:37,579 INFO meter_scanner: Application started. Database initialized.
+2025-12-06 12:02:37,583 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-06 12:02:44,737 INFO meter_scanner: Application started. Database initialized.
+2025-12-06 12:02:44,740 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-06 12:02:51,183 INFO meter_scanner: Application started. Database initialized.
+2025-12-06 12:02:51,185 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-06 12:02:58,095 INFO meter_scanner: Application started. Database initialized.
+2025-12-06 12:02:58,097 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-06 13:15:57,280 INFO meter_scanner: Application started. Database initialized.
+2025-12-06 13:15:57,281 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-06 13:16:01,337 INFO meter_scanner: Application started. Database initialized.
+2025-12-06 13:16:01,339 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-06 13:16:08,611 INFO meter_scanner: Application started. Database initialized.
+2025-12-06 13:16:08,612 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-06 13:16:14,511 INFO meter_scanner: Application started. Database initialized.
+2025-12-06 13:16:14,513 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-06 13:16:20,765 INFO meter_scanner: Application started. Database initialized.
+2025-12-06 13:16:20,765 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-06 13:16:23,780 INFO meter_scanner: Application started. Database initialized.
+2025-12-06 13:16:23,781 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-06 13:16:28,877 INFO meter_scanner: Application started. Database initialized.
+2025-12-06 13:16:28,877 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-06 13:16:32,999 INFO meter_scanner: Application started. Database initialized.
+2025-12-06 13:16:33,000 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-06 13:16:39,393 INFO meter_scanner: Application started. Database initialized.
+2025-12-06 13:16:39,395 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-06 13:16:43,438 INFO meter_scanner: Application started. Database initialized.
+2025-12-06 13:16:43,439 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-06 14:09:48,608 INFO meter_scanner: OCR detected value=1 conf=25.0 debug=debug_20251206_140947.jpg
+2025-12-06 14:09:48,618 INFO meter_scanner: take_photo OCR result status=detected conf=25.0 value=1
+2025-12-06 14:10:05,480 WARNING meter_scanner: Failed to grab frame in gen_frames
+2025-12-06 14:10:05,582 WARNING meter_scanner: Failed to grab frame in gen_frames
+2025-12-06 14:10:05,692 WARNING meter_scanner: Failed to grab frame in gen_frames
+2025-12-06 14:10:05,802 WARNING meter_scanner: Failed to grab frame in gen_frames
+2025-12-06 14:10:05,911 WARNING meter_scanner: Failed to grab frame in gen_frames
+2025-12-06 14:10:06,019 WARNING meter_scanner: Failed to grab frame in gen_frames
+2025-12-06 14:10:06,128 ERROR meter_scanner: Camera error
+Traceback (most recent call last):
+  File "D:\Riddhi\Meter_Scanner\app.py", line 806, in gen_frames
+    success, frame = camera.read()
+AttributeError: 'NoneType' object has no attribute 'read'
+2025-12-06 14:10:37,284 ERROR meter_scanner: Camera error
+Traceback (most recent call last):
+  File "D:\Riddhi\Meter_Scanner\app.py", line 806, in gen_frames
+    success, frame = camera.read()
+AttributeError: 'NoneType' object has no attribute 'read'
+2025-12-07 16:21:52,914 INFO meter_scanner: Application started. Database initialized.
+2025-12-07 16:21:52,916 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-07 16:22:02,178 INFO meter_scanner: Application started. Database initialized.
+2025-12-07 16:22:02,179 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-07 16:22:09,418 INFO meter_scanner: Application started. Database initialized.
+2025-12-07 16:22:09,419 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-07 16:22:16,314 INFO meter_scanner: Application started. Database initialized.
+2025-12-07 16:22:16,315 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-07 16:22:19,084 INFO meter_scanner: Application started. Database initialized.
+2025-12-07 16:22:19,084 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-07 16:22:22,878 INFO meter_scanner: Application started. Database initialized.
+2025-12-07 16:22:22,879 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-07 16:22:27,839 INFO meter_scanner: Application started. Database initialized.
+2025-12-07 16:22:27,840 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-07 16:22:33,871 INFO meter_scanner: Application started. Database initialized.
+2025-12-07 16:22:33,871 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-07 16:22:37,866 INFO meter_scanner: Application started. Database initialized.
+2025-12-07 16:22:37,866 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-07 16:22:40,588 INFO meter_scanner: Application started. Database initialized.
+2025-12-07 16:22:40,588 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-07 16:22:43,823 INFO meter_scanner: Application started. Database initialized.
+2025-12-07 16:22:43,824 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-07 16:22:53,149 INFO meter_scanner: Application started. Database initialized.
+2025-12-07 16:22:53,150 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-09 20:20:58,410 INFO meter_scanner: Application started. Database initialized.
+2025-12-09 20:20:58,411 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-09 20:21:07,651 INFO meter_scanner: Application started. Database initialized.
+2025-12-09 20:21:07,652 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-09 20:21:13,832 INFO meter_scanner: Application started. Database initialized.
+2025-12-09 20:21:13,832 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-09 20:21:20,891 INFO meter_scanner: Application started. Database initialized.
+2025-12-09 20:21:20,892 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-09 20:21:28,089 INFO meter_scanner: Application started. Database initialized.
+2025-12-09 20:21:28,090 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-09 20:21:32,010 INFO meter_scanner: Application started. Database initialized.
+2025-12-09 20:21:32,010 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-09 20:21:39,371 INFO meter_scanner: Application started. Database initialized.
+2025-12-09 20:21:39,372 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-09 20:21:43,359 INFO meter_scanner: Application started. Database initialized.
+2025-12-09 20:21:43,360 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-09 20:21:47,297 INFO meter_scanner: Application started. Database initialized.
+2025-12-09 20:21:47,297 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-09 20:21:50,108 INFO meter_scanner: Application started. Database initialized.
+2025-12-09 20:21:50,108 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-09 20:21:59,459 INFO meter_scanner: Application started. Database initialized.
+2025-12-09 20:21:59,460 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-10 23:16:06,219 INFO meter_scanner: Application started. Database initialized.
+2025-12-10 23:16:06,221 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-10 23:16:14,445 INFO meter_scanner: Application started. Database initialized.
+2025-12-10 23:16:14,446 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-10 23:16:20,570 INFO meter_scanner: Application started. Database initialized.
+2025-12-10 23:16:20,570 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-10 23:16:27,524 INFO meter_scanner: Application started. Database initialized.
+2025-12-10 23:16:27,525 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-10 23:16:30,573 INFO meter_scanner: Application started. Database initialized.
+2025-12-10 23:16:30,574 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-10 23:16:35,515 INFO meter_scanner: Application started. Database initialized.
+2025-12-10 23:16:35,517 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-10 23:16:40,553 INFO meter_scanner: Application started. Database initialized.
+2025-12-10 23:16:40,554 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-10 23:16:47,718 INFO meter_scanner: Application started. Database initialized.
+2025-12-10 23:16:47,719 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-10 23:16:51,570 INFO meter_scanner: Application started. Database initialized.
+2025-12-10 23:16:51,571 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-10 23:16:54,448 INFO meter_scanner: Application started. Database initialized.
+2025-12-10 23:16:54,449 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-10 23:16:57,287 INFO meter_scanner: Application started. Database initialized.
+2025-12-10 23:16:57,288 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2025-12-10 23:17:06,503 INFO meter_scanner: Application started. Database initialized.
+2025-12-10 23:17:06,504 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-13 11:47:13,120 INFO meter_scanner: Application started. Database initialized.
+2026-02-13 11:47:13,123 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-13 11:47:14,780 INFO meter_scanner: Application started. Database initialized.
+2026-02-13 11:47:14,781 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-13 11:48:07,733 INFO meter_scanner: Application started. Database initialized.
+2026-02-13 11:48:07,734 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-13 11:48:08,924 INFO meter_scanner: Application started. Database initialized.
+2026-02-13 11:48:08,925 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-13 11:52:08,223 INFO meter_scanner: Application started. Database initialized.
+2026-02-13 11:52:08,224 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-13 11:55:28,663 INFO meter_scanner: Application started. Database initialized.
+2026-02-13 11:55:28,663 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-13 11:55:44,933 INFO meter_scanner: Application started. Database initialized.
+2026-02-13 11:55:44,934 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-13 11:55:45,511 INFO meter_scanner: Application started. Database initialized.
+2026-02-13 11:55:45,511 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-13 12:00:56,559 INFO meter_scanner: Application started. Database initialized.
+2026-02-13 12:00:56,560 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-13 12:00:57,143 INFO meter_scanner: Application started. Database initialized.
+2026-02-13 12:00:57,144 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-13 12:09:21,785 ERROR meter_scanner: Camera error
+Traceback (most recent call last):
+  File "D:\Riddhi\Meter_Scanner\app.py", line 976, in gen_frames
+    success, frame = camera.read()
+                     ^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'read'
+2026-02-13 12:10:57,264 INFO meter_scanner: Application started. Database initialized.
+2026-02-13 12:10:57,265 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-13 12:10:57,296 INFO meter_scanner: Application started. Database initialized.
+2026-02-13 12:10:57,298 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-13 12:12:42,641 INFO meter_scanner: Application started. Database initialized.
+2026-02-13 12:12:42,642 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-13 12:12:43,156 INFO meter_scanner: Application started. Database initialized.
+2026-02-13 12:12:43,157 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-13 12:17:55,595 INFO meter_scanner: Application started. Database initialized.
+2026-02-13 12:17:55,596 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-13 12:17:56,103 INFO meter_scanner: Application started. Database initialized.
+2026-02-13 12:17:56,104 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-13 12:19:52,092 INFO meter_scanner: Application started. Database initialized.
+2026-02-13 12:19:52,093 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-13 12:19:52,122 INFO meter_scanner: Application started. Database initialized.
+2026-02-13 12:19:52,123 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-13 12:27:21,665 INFO meter_scanner: Application started. Database initialized.
+2026-02-13 12:27:21,666 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-13 12:27:21,696 INFO meter_scanner: Application started. Database initialized.
+2026-02-13 12:27:21,697 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 12:26:32,886 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 12:26:32,888 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 12:26:34,866 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 12:26:34,868 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 17:05:33,203 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 17:05:33,205 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 17:05:34,589 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 17:05:34,590 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 17:15:56,657 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 17:15:56,658 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 17:15:58,042 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 17:15:58,043 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 17:20:38,023 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 17:20:38,026 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 17:20:39,695 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 17:20:39,697 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 17:42:05,544 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 17:42:05,547 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 17:43:45,508 ERROR meter_scanner: Camera error
+Traceback (most recent call last):
+  File "D:\Riddhi\Meter_Scanner\app.py", line 1008, in gen_frames
+    success, frame = camera.read()
+                     ^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'read'
+2026-02-15 17:50:15,924 ERROR meter_scanner: Error in extract_meter_number
+Traceback (most recent call last):
+  File "C:\Users\admin\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pytesseract\pytesseract.py", line 275, in run_tesseract
+    proc = subprocess.Popen(cmd_args, **subprocess_args())
+  File "C:\Users\admin\AppData\Local\Python\pythoncore-3.14-64\Lib\subprocess.py", line 1038, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\admin\AppData\Local\Python\pythoncore-3.14-64\Lib\subprocess.py", line 1552, in _execute_child
+    hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+                       ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+                             # no special security
+                             ^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+                             cwd,
+                             ^^^^
+                             startupinfo)
+                             ^^^^^^^^^^^^
+FileNotFoundError: [WinError 2] The system cannot find the file specified
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Riddhi\Meter_Scanner\app.py", line 569, in extract_meter_number
+    result = pytesseract.image_to_string(roi_padded, config=custom_config)
+  File "C:\Users\admin\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pytesseract\pytesseract.py", line 486, in image_to_string
+    return {
+           ~
+    ...<2 lines>...
+        Output.STRING: lambda: run_and_get_output(*args),
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    }[output_type]()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\admin\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pytesseract\pytesseract.py", line 489, in <lambda>
+    Output.STRING: lambda: run_and_get_output(*args),
+                           ~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\admin\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pytesseract\pytesseract.py", line 352, in run_and_get_output
+    run_tesseract(**kwargs)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\admin\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pytesseract\pytesseract.py", line 280, in run_tesseract
+    raise TesseractNotFoundError()
+pytesseract.pytesseract.TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+2026-02-15 17:50:16,073 INFO meter_scanner: take_photo OCR result status=error conf=0 value=None
+2026-02-15 17:52:29,304 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-15 17:52:29,406 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-15 17:52:29,507 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-15 17:52:29,608 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-15 17:52:29,708 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-15 17:52:29,809 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-15 17:52:29,911 ERROR meter_scanner: Camera error
+Traceback (most recent call last):
+  File "D:\Riddhi\Meter_Scanner\app.py", line 1008, in gen_frames
+    success, frame = camera.read()
+                     ^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'read'
+2026-02-15 17:52:56,360 ERROR meter_scanner: Error in extract_meter_number
+Traceback (most recent call last):
+  File "C:\Users\admin\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pytesseract\pytesseract.py", line 275, in run_tesseract
+    proc = subprocess.Popen(cmd_args, **subprocess_args())
+  File "C:\Users\admin\AppData\Local\Python\pythoncore-3.14-64\Lib\subprocess.py", line 1038, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\admin\AppData\Local\Python\pythoncore-3.14-64\Lib\subprocess.py", line 1552, in _execute_child
+    hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+                       ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+                             # no special security
+                             ^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+                             cwd,
+                             ^^^^
+                             startupinfo)
+                             ^^^^^^^^^^^^
+FileNotFoundError: [WinError 2] The system cannot find the file specified
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Riddhi\Meter_Scanner\app.py", line 569, in extract_meter_number
+    result = pytesseract.image_to_string(roi_padded, config=custom_config)
+  File "C:\Users\admin\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pytesseract\pytesseract.py", line 486, in image_to_string
+    return {
+           ~
+    ...<2 lines>...
+        Output.STRING: lambda: run_and_get_output(*args),
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    }[output_type]()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\admin\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pytesseract\pytesseract.py", line 489, in <lambda>
+    Output.STRING: lambda: run_and_get_output(*args),
+                           ~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\admin\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pytesseract\pytesseract.py", line 352, in run_and_get_output
+    run_tesseract(**kwargs)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\admin\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pytesseract\pytesseract.py", line 280, in run_tesseract
+    raise TesseractNotFoundError()
+pytesseract.pytesseract.TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+2026-02-15 17:52:56,373 INFO meter_scanner: take_photo OCR result status=error conf=0 value=None
+2026-02-15 17:53:03,052 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-15 17:53:03,154 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-15 17:53:03,255 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-15 17:53:03,356 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-15 17:53:03,457 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-15 17:53:03,557 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-15 17:53:03,659 ERROR meter_scanner: Camera error
+Traceback (most recent call last):
+  File "D:\Riddhi\Meter_Scanner\app.py", line 1008, in gen_frames
+    success, frame = camera.read()
+                     ^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'read'
+2026-02-15 17:54:53,247 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 17:54:53,249 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 17:57:15,298 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 17:57:15,336 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 17:57:38,302 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 17:57:38,304 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 17:57:46,152 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 17:57:46,154 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 17:58:12,883 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 17:58:12,886 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 17:58:20,764 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 17:58:20,766 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 17:58:55,918 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 17:58:55,920 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 17:59:50,242 ERROR meter_scanner: Camera error
+Traceback (most recent call last):
+  File "D:\Riddhi\Meter_Scanner\app.py", line 1176, in gen_frames
+    success, frame = camera.read()
+                     ^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'read'
+2026-02-15 20:37:21,541 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 20:37:21,544 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 20:38:02,133 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 20:38:02,135 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 20:38:03,982 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 20:38:03,987 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 20:39:00,593 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 20:39:00,595 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 20:39:02,237 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 20:39:02,240 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 21:40:37,306 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 21:40:37,308 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 21:40:37,879 INFO meter_scanner: Application started. Database initialized.
+2026-02-15 21:40:37,880 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-15 21:42:46,832 ERROR meter_scanner: Camera error
+Traceback (most recent call last):
+  File "D:\Riddhi\Meter_Scanner\app.py", line 915, in gen_frames
+    success, frame = camera.read()
+                     ^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'read'
+2026-02-15 21:43:14,654 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-15 21:43:14,755 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-15 21:43:14,856 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-15 21:43:14,956 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-15 21:43:15,057 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-15 21:43:15,158 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-15 21:43:15,259 ERROR meter_scanner: Camera error
+Traceback (most recent call last):
+  File "D:\Riddhi\Meter_Scanner\app.py", line 915, in gen_frames
+    success, frame = camera.read()
+                     ^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'read'
+2026-02-18 20:21:34,367 INFO meter_scanner: Application started. Database initialized.
+2026-02-18 20:21:34,371 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-18 20:21:36,965 INFO meter_scanner: Application started. Database initialized.
+2026-02-18 20:21:36,968 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-22 19:48:39,841 INFO meter_scanner: Application started. Database initialized.
+2026-02-22 19:48:39,845 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-22 19:48:41,626 INFO meter_scanner: Application started. Database initialized.
+2026-02-22 19:48:41,630 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-22 19:55:51,689 INFO meter_scanner: Application started. Database initialized.
+2026-02-22 19:55:51,693 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-22 19:57:44,301 INFO meter_scanner: Application started. Database initialized.
+2026-02-22 19:57:44,304 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-22 19:57:46,512 INFO meter_scanner: Application started. Database initialized.
+2026-02-22 19:57:46,516 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-22 20:01:54,760 INFO meter_scanner: Application started. Database initialized.
+2026-02-22 20:01:54,761 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-22 20:03:13,435 INFO meter_scanner: Application started. Database initialized.
+2026-02-22 20:03:13,445 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-24 15:10:23,320 INFO meter_scanner: Application started. Database initialized.
+2026-02-24 15:10:23,322 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-24 15:10:24,014 INFO meter_scanner: Application started. Database initialized.
+2026-02-24 15:10:24,015 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-24 15:35:41,442 INFO meter_scanner: Application started. Database initialized.
+2026-02-24 15:35:41,464 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-24 15:35:42,516 INFO meter_scanner: Application started. Database initialized.
+2026-02-24 15:35:42,518 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-24 15:35:48,567 INFO meter_scanner: Application started. Database initialized.
+2026-02-24 15:35:48,568 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-24 15:35:49,547 INFO meter_scanner: Application started. Database initialized.
+2026-02-24 15:35:49,548 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-24 15:40:30,675 INFO meter_scanner: Application started. Database initialized.
+2026-02-24 15:40:30,676 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-24 15:40:31,425 INFO meter_scanner: Application started. Database initialized.
+2026-02-24 15:40:31,427 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-24 15:59:08,030 INFO meter_scanner: Application started. Database initialized.
+2026-02-24 15:59:08,034 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-24 15:59:10,999 INFO meter_scanner: Application started. Database initialized.
+2026-02-24 15:59:11,003 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-24 16:07:50,423 INFO meter_scanner: Application started. Database initialized.
+2026-02-24 16:07:50,425 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-24 16:07:51,857 INFO meter_scanner: Application started. Database initialized.
+2026-02-24 16:07:51,859 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-24 16:21:04,301 INFO meter_scanner: Application started. Database initialized.
+2026-02-24 16:21:04,305 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-24 16:21:05,447 INFO meter_scanner: Application started. Database initialized.
+2026-02-24 16:21:05,449 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-24 16:23:45,551 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-24 16:23:45,651 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-24 16:23:45,752 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-24 16:23:45,852 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-24 16:23:45,953 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-24 16:23:46,053 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-24 16:23:46,154 ERROR meter_scanner: Camera error
+Traceback (most recent call last):
+  File "D:\Riddhi\Meter_Scanner\app.py", line 1078, in gen_frames
+    success, frame = camera.read()
+                     ^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'read'
+2026-02-24 16:24:01,519 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-24 16:24:01,621 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-24 16:24:01,722 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-24 16:24:01,823 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-24 16:24:01,933 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-24 16:24:02,035 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-02-24 16:24:02,141 ERROR meter_scanner: Camera error
+Traceback (most recent call last):
+  File "D:\Riddhi\Meter_Scanner\app.py", line 1078, in gen_frames
+    success, frame = camera.read()
+                     ^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'read'
+2026-02-24 16:24:18,696 INFO meter_scanner: Application started. Database initialized.
+2026-02-24 16:24:18,698 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-24 16:24:20,148 INFO meter_scanner: Application started. Database initialized.
+2026-02-24 16:24:20,150 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-24 16:25:15,319 ERROR meter_scanner: Camera error
+Traceback (most recent call last):
+  File "D:\Riddhi\Meter_Scanner\app.py", line 1078, in gen_frames
+    success, frame = camera.read()
+                     ^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'read'
+2026-02-24 16:26:17,551 INFO meter_scanner: Application started. Database initialized.
+2026-02-24 16:26:17,555 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-24 16:26:19,952 INFO meter_scanner: Application started. Database initialized.
+2026-02-24 16:26:19,954 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-24 16:30:45,875 INFO meter_scanner: Application started. Database initialized.
+2026-02-24 16:30:45,876 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-24 16:30:47,066 INFO meter_scanner: Application started. Database initialized.
+2026-02-24 16:30:47,069 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-24 16:31:59,424 ERROR meter_scanner: Camera error
+Traceback (most recent call last):
+  File "D:\Riddhi\Meter_Scanner\app.py", line 1078, in gen_frames
+    success, frame = camera.read()
+                     ^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'read'
+2026-02-24 16:33:00,821 ERROR meter_scanner: Photo capture error
+Traceback (most recent call last):
+  File "D:\Riddhi\Meter_Scanner\app.py", line 1236, in take_photo
+    raw_value = result.get('value')
+                ^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'get'
+2026-02-25 23:08:16,648 INFO meter_scanner: Application started. Database initialized.
+2026-02-25 23:08:16,650 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-25 23:08:17,837 INFO meter_scanner: Application started. Database initialized.
+2026-02-25 23:08:17,838 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-02-25 23:09:25,014 ERROR meter_scanner: Camera error
+Traceback (most recent call last):
+  File "D:\Riddhi\Meter_Scanner\app.py", line 1078, in gen_frames
+    success, frame = camera.read()
+                     ^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'read'
+2026-02-25 23:10:04,604 ERROR meter_scanner: Photo capture error
+Traceback (most recent call last):
+  File "D:\Riddhi\Meter_Scanner\app.py", line 1236, in take_photo
+    raw_value = result.get('value')
+                ^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'get'
+2026-03-18 11:56:06,727 INFO meter_scanner: Application started. Database initialized.
+2026-03-18 11:56:06,733 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-03-18 11:56:09,403 INFO meter_scanner: Application started. Database initialized.
+2026-03-18 11:56:09,405 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-03-18 19:59:38,577 INFO meter_scanner: Application started. Database initialized.
+2026-03-18 19:59:38,579 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-03-18 20:00:51,868 INFO meter_scanner: Application started. Database initialized.
+2026-03-18 20:00:51,870 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-03-18 20:00:52,639 INFO meter_scanner: Application started. Database initialized.
+2026-03-18 20:00:52,640 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-03-26 22:52:23,806 INFO meter_scanner: Application started. Database initialized.
+2026-03-26 22:52:23,810 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-03-26 22:52:25,795 INFO meter_scanner: Application started. Database initialized.
+2026-03-26 22:52:25,798 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-02 19:42:18,841 INFO meter_scanner: Application started. Database initialized.
+2026-04-02 19:42:18,843 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-02 19:42:19,819 INFO meter_scanner: Application started. Database initialized.
+2026-04-02 19:42:19,821 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-02 23:27:14,923 INFO meter_scanner: Application started. Database initialized.
+2026-04-02 23:27:14,927 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-04 11:03:21,262 INFO meter_scanner: Application started. Database initialized.
+2026-04-04 11:03:21,267 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-04 11:03:21,990 INFO meter_scanner: Application started. Database initialized.
+2026-04-04 11:03:21,991 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-04 11:03:40,827 INFO meter_scanner: Application started. Database initialized.
+2026-04-04 11:03:40,829 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-04 11:03:41,986 INFO meter_scanner: Application started. Database initialized.
+2026-04-04 11:03:41,989 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-04 11:15:21,732 INFO meter_scanner: Application started. Database initialized.
+2026-04-04 11:15:21,737 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-04 11:15:21,740 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-04 11:36:28,777 INFO meter_scanner: Application started. Database initialized.
+2026-04-04 11:36:28,780 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-04 11:36:29,666 INFO meter_scanner: Application started. Database initialized.
+2026-04-04 11:36:29,667 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-04 12:21:13,667 INFO meter_scanner: Application started. Database initialized.
+2026-04-04 12:21:13,674 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-04 12:21:28,864 INFO meter_scanner: Application started. Database initialized.
+2026-04-04 12:21:28,869 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-04 12:21:47,932 INFO meter_scanner: Application started. Database initialized.
+2026-04-04 12:21:47,933 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-04 12:22:05,002 INFO meter_scanner: Application started. Database initialized.
+2026-04-04 12:22:05,003 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-04 13:01:21,209 INFO meter_scanner: Application started. Database initialized.
+2026-04-04 13:01:21,210 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-04 13:07:14,096 ERROR meter_scanner: Photo capture error
+Traceback (most recent call last):
+  File "D:\Riddhi\Meter_Scanner\app.py", line 1575, in take_photo
+    raw_value = result.get('value')
+                ^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'get'
+2026-04-04 15:53:27,714 ERROR meter_scanner: Camera error
+Traceback (most recent call last):
+  File "D:\Riddhi\Meter_Scanner\app.py", line 1417, in gen_frames
+    success, frame = camera.read()
+                     ^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'read'
+2026-04-04 16:06:32,420 INFO meter_scanner: Application started. Database initialized.
+2026-04-04 16:06:32,424 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-04 16:06:34,472 INFO meter_scanner: Application started. Database initialized.
+2026-04-04 16:06:34,474 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-04 16:09:01,748 INFO meter_scanner: Application started. Database initialized.
+2026-04-04 16:09:01,755 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-04 16:10:19,370 INFO meter_scanner: Application started. Database initialized.
+2026-04-04 16:10:19,372 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-04 16:10:37,158 INFO meter_scanner: Application started. Database initialized.
+2026-04-04 16:10:37,160 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-06 16:41:45,130 INFO meter_scanner: Application started. Database initialized.
+2026-04-06 16:41:45,132 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-06 16:41:46,090 INFO meter_scanner: Application started. Database initialized.
+2026-04-06 16:41:46,091 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-06 16:42:43,222 INFO meter_scanner: Application started. Database initialized.
+2026-04-06 16:42:43,224 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-06 16:43:16,337 INFO meter_scanner: Application started. Database initialized.
+2026-04-06 16:43:16,338 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-06 16:43:17,541 INFO meter_scanner: Application started. Database initialized.
+2026-04-06 16:43:17,542 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-06 17:06:58,264 ERROR meter_scanner: Camera error
+Traceback (most recent call last):
+  File "D:\Riddhi\Meter_Scanner\app.py", line 1406, in gen_frames
+    success, frame = camera.read()
+                     ^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'read'
+2026-04-06 17:07:13,817 ERROR meter_scanner: Fallback 1 failed: tesseract is not installed or it's not in your PATH. See README file for more information.
+2026-04-06 17:14:09,236 INFO meter_scanner: Application started. Database initialized.
+2026-04-06 17:14:09,239 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-06 17:14:39,019 INFO meter_scanner: Application started. Database initialized.
+2026-04-06 17:14:39,020 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-04-06 17:26:59,836 INFO meter_scanner: Application started. Database initialized.
+2026-04-06 17:26:59,837 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-05-07 10:56:09,291 INFO meter_scanner: Application started. Database initialized.
+2026-05-07 10:56:09,295 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-05-07 10:56:11,214 INFO meter_scanner: Application started. Database initialized.
+2026-05-07 10:56:11,217 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-05-07 14:51:20,370 INFO meter_scanner: Application started. Database initialized.
+2026-05-07 14:51:20,372 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-05-07 14:51:21,827 INFO meter_scanner: Application started. Database initialized.
+2026-05-07 14:51:21,829 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-05-11 00:35:21,885 INFO meter_scanner: Application started. Database initialized.
+2026-05-11 00:35:21,888 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-05-11 00:35:23,841 INFO meter_scanner: Application started. Database initialized.
+2026-05-11 00:35:23,842 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).

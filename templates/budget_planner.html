@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+
+{% block title %}Budget Planner{% endblock %}
+
+{% block content %}
+<style>
+.budget-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+.budget-card {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.budget-progress {
+    height: 30px;
+    border-radius: 15px;
+    background: #e9ecef;
+    overflow: hidden;
+    position: relative;
+}
+
+.budget-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4e73df, #224abe);
+    border-radius: 15px;
+    transition: width 0.5s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
+.budget-progress-bar.warning {
+    background: linear-gradient(90deg, #f6c23e, #dda20a);
+}
+
+.budget-progress-bar.danger {
+    background: linear-gradient(90deg, #e74a3b, #c0392b);
+}
+
+.budget-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.stat-label {
+    opacity: 0.9;
+    font-size: 0.9rem;
+}
+
+.budget-form {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.monthly-breakdown {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.savings-tips {
+    background: #f8f9fc;
+    border-radius: 15px;
+    padding: 1.5rem;
+    border-left: 4px solid #4e73df;
+}
+
+.tip-item {
+    background: white;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-left: 3px solid #1cc88a;
+}
+
+.chart-container {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    height: 400px;
+}
+</style>
+
+<div class="budget-container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-4">📈 Budget Planner & Savings</h2>
+        </div>
+    </div>
+
+    <!-- Budget Statistics -->
+    <div class="budget-stats">
+        <div class="stat-card">
+            <div class="stat-value">₹{{ current_budget.monthly_limit or 0 }}</div>
+            <div class="stat-label">Monthly Budget</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">₹{{ current_budget.current_spending or 0 }}</div>
+            <div class="stat-label">Current Spending</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">₹{{ remaining_budget or 0 }}</div>
+            <div class="stat-label">Remaining Budget</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ savings_percentage }}%</div>
+            <div class="stat-label">Potential Savings</div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Current Budget Status -->
+        <div class="col-lg-6">
+            <div class="budget-card">
+                <h4 class="mb-3">💰 Current Budget Status</h4>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Usage Progress</span>
+                        <span>{{ usage_percentage }}%</span>
+                    </div>
+                    <div class="budget-progress">
+                        <div class="budget-progress-bar {{ 'warning' if usage_percentage > 80 else 'danger' if usage_percentage > 95 else '' }}" 
+                             style="width: {{ usage_percentage }}%">
+                            {{ usage_percentage }}%
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row text-center">
+                    <div class="col-4">
+                        <small class="text-muted">Daily Average</small>
+                        <h5>₹{{ daily_average }}</h5>
+                    </div>
+                    <div class="col-4">
+                        <small class="text-muted">Projected Total</small>
+                        <h5>₹{{ projected_total }}</h5>
+                    </div>
+                    <div class="col-4">
+                        <small class="text-muted">Days Left</small>
+                        <h5>{{ days_left }}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create/Edit Budget -->
+        <div class="col-lg-6">
+            <div class="budget-form">
+                <h4 class="mb-4">⚙️ Set Monthly Budget</h4>
+                <form id="budgetForm">
+                    <div class="mb-3">
+                        <label class="form-label">Budget Type</label>
+                        <select class="form-select" id="budgetType" required>
+                            <option value="electricity">Electricity</option>
+                            <option value="water">Water</option>
+                            <option value="gas">Gas</option>
+                            <option value="combined">Combined Utilities</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Monthly Limit (₹)</label>
+                        <input type="number" class="form-control" id="monthlyLimit" 
+                               value="{{ current_budget.monthly_limit or 1500 }}" 
+                               step="10" min="0" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Alert Threshold (%)</label>
+                        <input type="range" class="form-range" id="alertThreshold" 
+                               min="50" max="100" value="80" 
+                               oninput="updateThresholdValue(this.value)">
+                        <small>Alert when budget reaches <span id="thresholdValue">80</span>%</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Savings Goal (%)</label>
+                        <input type="number" class="form-control" id="savingsGoal" 
+                               value="10" min="0" max="50" step="1">
+                        <small class="text-muted">Percentage of budget you want to save</small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-piggy-bank"></i> Update Budget
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Breakdown & Chart -->
+    <div class="row mt-4">
+        <div class="col-lg-8">
+            <div class="chart-container">
+                <h4 class="mb-3">📊 Monthly Spending Trend</h4>
+                <canvas id="budgetChart"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="monthly-breakdown">
+                <h4 class="mb-3">💸 Spending Breakdown</h4>
+                {% for category in spending_breakdown %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>{{ category.name }}</span>
+                    <div class="d-flex align-items-center">
+                        <div class="progress me-2" style="width: 100px; height: 8px;">
+                            <div class="progress-bar" style="width: {{ category.percentage }}%"></div>
+                        </div>
+                        <small>₹{{ category.amount }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Savings Tips -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="savings-tips">
+                <h4 class="mb-3">💡 Personalized Savings Tips</h4>
+                <div class="row">
+                    {% for tip in savings_tips %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="tip-item">
+                            <h6>{{ tip.title }}</h6>
+                            <p class="mb-2">{{ tip.description }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-success">Save up to ₹{{ tip.potential_savings }}/month</small>
+                                <span class="badge bg-{{ 'success' if tip.difficulty == 'easy' else 'warning' if tip.difficulty == 'medium' else 'danger' }}">
+                                    {{ tip.difficulty|title }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+function updateThresholdValue(value) {
+    document.getElementById('thresholdValue').textContent = value;
+}
+
+document.getElementById('budgetForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        budget_type: document.getElementById('budgetType').value,
+        monthly_limit: parseFloat(document.getElementById('monthlyLimit').value),
+        alert_threshold: parseInt(document.getElementById('alertThreshold').value),
+        savings_goal: parseInt(document.getElementById('savingsGoal').value)
+    };
+    
+    fetch('/api/budgets', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Budget updated successfully!', 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification('Error updating budget: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error updating budget', 'error');
+    });
+});
+
+function showNotification(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.querySelector('.budget-container').insertBefore(alertDiv, document.querySelector('.budget-container').firstChild);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+
+// Initialize budget chart
+const ctx = document.getElementById('budgetChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ monthly_labels|tojson }},
+        datasets: [{
+            label: 'Actual Spending',
+            data: {{ actual_spending|tojson }},
+            borderColor: 'rgb(102, 126, 234)',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            tension: 0.4,
+            fill: true
+        }, {
+            label: 'Budget Limit',
+            data: {{ budget_limits|tojson }},
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+            borderDash: [5, 5],
+            tension: 0,
+            fill: false
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'top' },
+            title: { display: true, text: '6-Month Budget vs Actual' }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Amount (₹)'
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

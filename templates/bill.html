@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Electricity Bill{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0 text-center">Electricity Bill</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <h5>Bill Date: {{ bill.bill_date }}</h5>
+                        </div>
+                        <div class="col-6 text-end">
+                            <h5>Due Date: {{ bill.due_date }}</h5>
+                        </div>
+                    </div>
+
+                    <!-- Meter Reading Details -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Meter Reading Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <th>Current Reading</th>
+                                        <td class="text-end">{{ bill.current_reading }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Previous Reading</th>
+                                        <td class="text-end">{{ bill.previous_reading }}</td>
+                                    </tr>
+                                    <tr class="table-info">
+                                        <th>Units Consumed</th>
+                                        <td class="text-end">{{ bill.units_consumed }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Slab-wise Charges -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Energy Charges Breakup</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Slab (Units)</th>
+                                        <th class="text-end">Units</th>
+                                        <th class="text-end">Rate (Rs)</th>
+                                        <th class="text-end">Amount (Rs)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for slab in bill.slab_breakup %}
+                                    <tr>
+                                        <td>{{ slab.start }}-{{ slab.end }}</td>
+                                        <td class="text-end">{{ slab.units }}</td>
+                                        <td class="text-end">{{ slab.rate }}</td>
+                                        <td class="text-end">{{ slab.charge }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    <tr class="table-info">
+                                        <th colspan="3">Total Energy Charges</th>
+                                        <td class="text-end">{{ bill.energy_charges }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Bill Summary -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Bill Summary</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <th>Energy Charges</th>
+                                        <td class="text-end">{{ bill.energy_charges }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Fixed Charges</th>
+                                        <td class="text-end">{{ bill.fixed_charge }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Fuel Surcharge ({{ bill.fuel_surcharge_rate }}%)</th>
+                                        <td class="text-end">{{ bill.fuel_surcharge }}</td>
+                                    </tr>
+                                    <tr class="table-info">
+                                        <th>Subtotal</th>
+                                        <td class="text-end">{{ bill.subtotal }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>GST @ {{ bill.gst_rate }}%</th>
+                                        <td class="text-end">{{ bill.gst_amount }}</td>
+                                    </tr>
+                                    <tr class="table-primary">
+                                        <th><h4 class="mb-0">Total Amount (Rs)</h4></th>
+                                        <td class="text-end"><h4 class="mb-0">{{ bill.total_amount }}</h4></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <button class="btn btn-primary me-2" onclick="window.print()">
+                            <i class="fas fa-print me-2"></i>Print Bill
+                        </button>
+                        <a href="{{ url_for('readings') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Readings
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .btn { display: none; }
+    .card { border: none; }
+    .card-header { background-color: #fff !important; color: #000 !important; }
+}
+</style>
+{% endblock %}

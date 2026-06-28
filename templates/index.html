@@ -1,0 +1,889 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<!-- ============================================================
+     HERO SECTION
+============================================================ -->
+<style>
+    /* ---- Reset container for full-width hero, no gap ---- */
+    .container.mt-4.page-content { padding: 0; max-width: 100% !important; margin-top: 0 !important; }
+
+    /* ---- Hero ---- */
+    .hero-section {
+        position: relative;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background: #0a0f2e;
+    }
+
+    .hero-bg {
+        position: absolute;
+        inset: 0;
+        background-image: url("{{ url_for('static', filename='hero_bg.png') }}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        filter: brightness(0.45) saturate(1.3);
+        transform: scale(1.05);
+        animation: heroZoom 20s ease-in-out infinite alternate;
+    }
+
+    @keyframes heroZoom {
+        from { transform: scale(1.05); }
+        to   { transform: scale(1.12); }
+    }
+
+    /* animated electric overlay */
+    .hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            135deg,
+            rgba(10,15,46,0.55) 0%,
+            rgba(0,60,120,0.3) 50%,
+            rgba(60,0,120,0.4) 100%
+        );
+        z-index: 1;
+    }
+
+    /* ---- Particles ---- */
+    #particles-canvas {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        pointer-events: none;
+    }
+
+    /* ---- Hero content ---- */
+    .hero-content {
+        position: relative;
+        z-index: 3;
+        text-align: center;
+        padding: 2rem;
+        max-width: 900px;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(0,200,255,0.15);
+        border: 1px solid rgba(0,200,255,0.4);
+        color: #00cfff;
+        padding: 0.45rem 1.2rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 1.5rem;
+        animation: fadeInDown 0.8s ease-out both;
+        backdrop-filter: blur(10px);
+    }
+
+    .hero-badge .pulse-dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: #00cfff;
+        animation: pulseDot 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulseDot {
+        0%,100% { transform: scale(1); opacity: 1; }
+        50%      { transform: scale(1.6); opacity: 0.5; }
+    }
+
+    .hero-title {
+        font-size: clamp(2.5rem, 7vw, 5.5rem);
+        font-weight: 900;
+        color: #fff;
+        line-height: 1.1;
+        margin-bottom: 1.2rem;
+        animation: fadeInUp 0.9s ease-out 0.2s both;
+        text-shadow: 0 0 40px rgba(0,180,255,0.4);
+    }
+
+    .hero-title .gradient-text {
+        background: linear-gradient(135deg, #00cfff, #a855f7, #00cfff);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: textShine 4s linear infinite;
+    }
+
+    @keyframes textShine {
+        to { background-position: 200% center; }
+    }
+
+    .hero-subtitle {
+        font-size: clamp(1rem, 2.5vw, 1.35rem);
+        color: rgba(255,255,255,0.75);
+        margin-bottom: 2.5rem;
+        line-height: 1.7;
+        animation: fadeInUp 0.9s ease-out 0.4s both;
+    }
+
+    .hero-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        animation: fadeInUp 0.9s ease-out 0.6s both;
+    }
+
+    .btn-hero-primary {
+        padding: 1rem 2.5rem;
+        font-size: 1rem;
+        font-weight: 700;
+        border-radius: 50px;
+        border: none;
+        background: linear-gradient(135deg, #00cfff, #7c3aed);
+        color: #fff;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 30px rgba(0,207,255,0.35);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-hero-primary::before {
+        content: '';
+        position: absolute;
+        top: -50%; left: -50%;
+        width: 200%; height: 200%;
+        background: linear-gradient(transparent, rgba(255,255,255,0.15), transparent);
+        transform: rotate(45deg) translateX(-100%);
+        transition: transform 0.5s ease;
+    }
+
+    .btn-hero-primary:hover::before { transform: rotate(45deg) translateX(100%); }
+    .btn-hero-primary:hover {
+        transform: translateY(-4px) scale(1.03);
+        box-shadow: 0 0 50px rgba(0,207,255,0.55);
+        color: #fff;
+    }
+
+    .btn-hero-outline {
+        padding: 1rem 2.5rem;
+        font-size: 1rem;
+        font-weight: 700;
+        border-radius: 50px;
+        border: 2px solid rgba(255,255,255,0.4);
+        background: rgba(255,255,255,0.07);
+        backdrop-filter: blur(10px);
+        color: #fff;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-hero-outline:hover {
+        background: rgba(255,255,255,0.18);
+        border-color: rgba(255,255,255,0.7);
+        transform: translateY(-4px);
+        color: #fff;
+    }
+
+    /* scroll cue */
+    .scroll-cue {
+        position: absolute;
+        bottom: 2.5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 3;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+        color: rgba(255,255,255,0.5);
+        font-size: 0.75rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        animation: fadeIn 1.5s ease-out 1.2s both;
+    }
+
+    .scroll-cue .mouse {
+        width: 24px; height: 38px;
+        border: 2px solid rgba(255,255,255,0.35);
+        border-radius: 12px;
+        position: relative;
+    }
+
+    .scroll-cue .mouse::after {
+        content: '';
+        position: absolute;
+        top: 6px; left: 50%;
+        transform: translateX(-50%);
+        width: 4px; height: 8px;
+        background: rgba(255,255,255,0.6);
+        border-radius: 2px;
+        animation: scrollWheel 1.6s ease-in-out infinite;
+    }
+
+    @keyframes scrollWheel {
+        0%   { transform: translateX(-50%) translateY(0); opacity: 1; }
+        100% { transform: translateX(-50%) translateY(10px); opacity: 0; }
+    }
+
+    /* ---- Stats Bar ---- */
+    .stats-section {
+        background: rgba(255,255,255,0.04);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid rgba(255,255,255,0.08);
+        padding: 2.5rem 0;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .stat-item.visible { opacity: 1; transform: translateY(0); }
+
+    .stat-number {
+        font-size: 2.6rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #00cfff, #a855f7);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1;
+    }
+
+    .stat-label {
+        color: rgba(255,255,255,0.6);
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 0.3rem;
+    }
+
+    /* ---- Features Section ---- */
+    .features-section {
+        padding: 6rem 2rem;
+        background: linear-gradient(180deg, #0a0f2e 0%, #0d1540 100%);
+    }
+
+    .section-header { text-align: center; margin-bottom: 4rem; }
+
+    .section-tag {
+        display: inline-block;
+        color: #00cfff;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+    }
+
+    .section-title {
+        font-size: clamp(1.8rem, 4vw, 2.8rem);
+        font-weight: 800;
+        color: #fff;
+        margin-bottom: 1rem;
+    }
+
+    .section-desc {
+        color: rgba(255,255,255,0.55);
+        font-size: 1rem;
+        max-width: 550px;
+        margin: 0 auto;
+        line-height: 1.7;
+    }
+
+    .feature-card {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 20px;
+        padding: 2rem;
+        text-align: center;
+        transition: opacity 0.5s ease, transform 0.5s ease;
+        opacity: 0;
+        transform: translateY(30px);
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: var(--card-gradient, linear-gradient(135deg, rgba(0,207,255,0.08), transparent));
+        opacity: 0;
+        transition: opacity 0.4s ease;
+    }
+
+    .feature-card:hover::before { opacity: 1; }
+
+    .feature-card.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-8px);
+        border-color: rgba(0,207,255,0.25);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.4), 0 0 30px rgba(0,207,255,0.1);
+    }
+
+    .feature-icon {
+        width: 72px; height: 72px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin: 0 auto 1.3rem;
+        position: relative;
+    }
+
+    .feature-icon::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border-radius: inherit;
+        border: 1px solid currentColor;
+        opacity: 0.2;
+        animation: iconPulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes iconPulse {
+        0%,100% { transform: scale(1); opacity: 0.2; }
+        50%      { transform: scale(1.12); opacity: 0.05; }
+    }
+
+    .feature-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 0.6rem;
+    }
+
+    .feature-desc {
+        font-size: 0.9rem;
+        color: rgba(255,255,255,0.5);
+        line-height: 1.6;
+    }
+
+    /* ---- How It Works ---- */
+    .hiw-section {
+        padding: 5rem 2rem;
+        background: #0a0f2e;
+    }
+
+    .hiw-step {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+        opacity: 0;
+        transform: translateX(-30px);
+        transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .hiw-step.visible { opacity: 1; transform: translateX(0); }
+
+    .hiw-number {
+        flex-shrink: 0;
+        width: 50px; height: 50px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #00cfff, #7c3aed);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        font-weight: 900;
+        color: #fff;
+        box-shadow: 0 0 25px rgba(0,207,255,0.35);
+    }
+
+    .hiw-text h4 { color: #fff; font-weight: 700; margin-bottom: 0.3rem; font-size: 1rem; }
+    .hiw-text p  { color: rgba(255,255,255,0.5); font-size: 0.9rem; line-height: 1.6; margin: 0; }
+
+    /* HIW phone mockup */
+    .hiw-phone {
+        width: 240px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 36px;
+        padding: 1.5rem 1rem;
+        margin: 0 auto;
+        text-align: center;
+        animation: floatPhone 4s ease-in-out infinite;
+    }
+
+    @keyframes floatPhone {
+        0%,100% { transform: translateY(0); }
+        50%      { transform: translateY(-18px); }
+    }
+
+    .phone-screen {
+        background: linear-gradient(135deg, #0d1540, #1a0d40);
+        border-radius: 24px;
+        padding: 1.5rem 1rem;
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .phone-reading {
+        font-size: 2.8rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #00cfff, #a855f7);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .phone-label { color: rgba(255,255,255,0.4); font-size: 0.75rem; letter-spacing: 2px; }
+
+    /* ---- CTA Section ---- */
+    .cta-section {
+        padding: 6rem 2rem;
+        background: linear-gradient(135deg, #0d1540, #1a0d40);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cta-glow {
+        position: absolute;
+        width: 600px; height: 600px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(0,207,255,0.12) 0%, transparent 70%);
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        animation: glowPulse 5s ease-in-out infinite;
+    }
+
+    @keyframes glowPulse {
+        0%,100% { transform: translate(-50%,-50%) scale(1); }
+        50%      { transform: translate(-50%,-50%) scale(1.3); }
+    }
+
+    .cta-title {
+        font-size: clamp(1.8rem, 4vw, 3rem);
+        font-weight: 900;
+        color: #fff;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+
+    .cta-sub {
+        color: rgba(255,255,255,0.6);
+        font-size: 1.05rem;
+        margin-bottom: 2.5rem;
+        position: relative;
+    }
+
+    /* ---- Footer bar ---- */
+    .home-footer {
+        background: rgba(0,0,0,0.4);
+        border-top: 1px solid rgba(255,255,255,0.06);
+        padding: 1.5rem 2rem;
+        text-align: center;
+        color: rgba(255,255,255,0.3);
+        font-size: 0.82rem;
+    }
+
+    /* ---- Keyframes shared ---- */
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+
+    /* ---- Electric line animating ---- */
+    .electric-line {
+        position: absolute;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #00cfff, transparent);
+        animation: electricSlide 3s linear infinite;
+        opacity: 0.4;
+        z-index: 2;
+    }
+
+    @keyframes electricSlide {
+        from { transform: translateX(-100%); }
+        to   { transform: translateX(100vw); }
+    }
+
+    /* divider glow */
+    .glow-divider {
+        width: 80px; height: 3px;
+        background: linear-gradient(90deg, #00cfff, #a855f7);
+        border-radius: 3px;
+        margin: 1rem auto;
+    }
+</style>
+
+<!-- ===================== HERO ===================== -->
+<div class="hero-section">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+
+    <!-- Electric lines -->
+    <div class="electric-line" style="top: 28%; width: 60%; animation-delay: 0s; animation-duration: 3.5s;"></div>
+    <div class="electric-line" style="top: 55%; width: 45%; animation-delay: 1.2s; animation-duration: 4s;"></div>
+    <div class="electric-line" style="top: 72%; width: 70%; animation-delay: 0.6s; animation-duration: 2.8s;"></div>
+
+    <!-- Particle canvas -->
+    <canvas id="particles-canvas"></canvas>
+
+    <div class="hero-content">
+        <div class="hero-badge">
+            <span class="pulse-dot"></span>
+            Smart Meter Technology
+        </div>
+
+        <h1 class="hero-title">
+            Track Your Energy<br>
+            <span class="gradient-text">Like Never Before</span>
+        </h1>
+
+        <p class="hero-subtitle">
+            Meter Scanner Pro uses AI-powered OCR to instantly read and record your utility meters.
+            Monitor usage, forecast bills, and save energy—all in one place.
+        </p>
+
+        <div class="hero-buttons">
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('dashboard') }}" class="btn-hero-primary">
+                    <i class="bi bi-speedometer2"></i> Go to Dashboard
+                </a>
+            {% else %}
+                <a href="{{ url_for('register') }}" class="btn-hero-primary">
+                    <i class="bi bi-rocket-takeoff-fill"></i> Get Started Free
+                </a>
+                <a href="{{ url_for('login') }}" class="btn-hero-outline">
+                    <i class="bi bi-box-arrow-in-right"></i> Sign In
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="scroll-cue">
+        <div class="mouse"></div>
+        <span>Scroll</span>
+    </div>
+</div>
+
+<!-- ===================== STATS ===================== -->
+<div class="stats-section" style="background:linear-gradient(180deg,#0a0f2e,#0d1540);">
+    <div class="container">
+        <div class="row g-0">
+            <div class="col-6 col-md-3">
+                <div class="stat-item" data-target="50000" data-suffix="+">
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Meters Scanned</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-item" data-target="12000" data-suffix="+">
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Active Users</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-item" data-target="99" data-suffix="%">
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Accuracy Rate</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-item" data-target="30" data-suffix="s">
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Avg. Scan Time</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== FEATURES ===================== -->
+<div class="features-section">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">Why choose us</div>
+            <h2 class="section-title">Everything you need to manage<br>your utility meters</h2>
+            <div class="glow-divider"></div>
+            <p class="section-desc">From AI-powered scanning to detailed analytics — we've built the most complete meter management platform.</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card" style="--card-gradient: linear-gradient(135deg, rgba(0,207,255,0.1), transparent);" data-delay="0">
+                    <div class="feature-icon" style="background: linear-gradient(135deg,#00cfff22,#00cfff44); color:#00cfff;">⚡</div>
+                    <div class="feature-title">Instant AI Scanning</div>
+                    <div class="feature-desc">Point your camera at any meter. Our OCR engine reads the digits in under 30 seconds with 99% accuracy.</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card" style="--card-gradient: linear-gradient(135deg, rgba(168,85,247,0.1), transparent);" data-delay="100">
+                    <div class="feature-icon" style="background: linear-gradient(135deg,#a855f722,#a855f744); color:#a855f7;">📊</div>
+                    <div class="feature-title">Smart Analytics</div>
+                    <div class="feature-desc">Visualize trends, compare months, and get insights on your consumption patterns in beautiful charts.</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card" style="--card-gradient: linear-gradient(135deg, rgba(16,185,129,0.1), transparent);" data-delay="200">
+                    <div class="feature-icon" style="background: linear-gradient(135deg,#10b98122,#10b98144); color:#10b981;">💰</div>
+                    <div class="feature-title">Bill Forecasting</div>
+                    <div class="feature-desc">Get accurate bill estimates before the statement arrives. Set budget limits and receive alerts automatically.</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card" style="--card-gradient: linear-gradient(135deg, rgba(251,146,60,0.1), transparent);" data-delay="300">
+                    <div class="feature-icon" style="background: linear-gradient(135deg,#fb923c22,#fb923c44); color:#fb923c;">🔔</div>
+                    <div class="feature-title">Smart Alerts</div>
+                    <div class="feature-desc">Customizable alerts for unusual spikes, missed readings, or budget thresholds — sent instantly to you.</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card" style="--card-gradient: linear-gradient(135deg, rgba(236,72,153,0.1), transparent);" data-delay="400">
+                    <div class="feature-icon" style="background: linear-gradient(135deg,#ec489922,#ec489944); color:#ec4899;">🤖</div>
+                    <div class="feature-title">MeterBot Assistant</div>
+                    <div class="feature-desc">Ask anything to our AI chatbot. It helps you troubleshoot, analyze bills, and gives energy saving tips.</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card" style="--card-gradient: linear-gradient(135deg, rgba(20,184,166,0.1), transparent);" data-delay="500">
+                    <div class="feature-icon" style="background: linear-gradient(135deg,#14b8a622,#14b8a644); color:#14b8a6;">📁</div>
+                    <div class="feature-title">Export & Reports</div>
+                    <div class="feature-desc">Download your complete reading history in CSV, generate monthly reports, and share with your provider.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== HOW IT WORKS ===================== -->
+<div class="hiw-section">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="section-header text-start mb-4" style="text-align:left!important;">
+                    <div class="section-tag">How it works</div>
+                    <h2 class="section-title">Three steps to<br><span style="background:linear-gradient(135deg,#00cfff,#a855f7);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">smarter readings</span></h2>
+                    <div class="glow-divider" style="margin:1rem 0;"></div>
+                </div>
+
+                <div class="hiw-step">
+                    <div class="hiw-number">1</div>
+                    <div class="hiw-text">
+                        <h4>Create your free account</h4>
+                        <p>Sign up in seconds — no credit card needed. Your data is always private and encrypted.</p>
+                    </div>
+                </div>
+                <div class="hiw-step" style="transition-delay:0.15s;">
+                    <div class="hiw-number">2</div>
+                    <div class="hiw-text">
+                        <h4>Scan your meter with AI</h4>
+                        <p>Open the scanner, point at your meter, and tap capture. The AI reads the digits instantly.</p>
+                    </div>
+                </div>
+                <div class="hiw-step" style="transition-delay:0.3s;">
+                    <div class="hiw-number">3</div>
+                    <div class="hiw-text">
+                        <h4>Track usage and save money</h4>
+                        <p>Explore your dashboard, get bill forecasts, and use energy tips to reduce your bills.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 d-flex justify-content-center">
+                <div class="hiw-phone">
+                    <div class="phone-screen">
+                        <div class="phone-label">CURRENT READING</div>
+                        <div class="phone-reading" id="phone-counter">0472</div>
+                        <div class="phone-label" style="margin-top:0.3rem;color:#00cfff;">kWh</div>
+                        <hr style="border-color:rgba(255,255,255,0.08);margin:.8rem 0;">
+                        <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,0.4);font-size:.72rem;">
+                            <span>Est. Bill</span><span style="color:#10b981;font-weight:700;">₹ 2,140</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,0.4);font-size:.72rem;margin-top:.3rem;">
+                            <span>vs Last Month</span><span style="color:#fb923c;font-weight:700;">↑ 4.2%</span>
+                        </div>
+                        <div style="margin-top:1rem;height:40px;background:linear-gradient(135deg,rgba(0,207,255,0.15),rgba(168,85,247,0.15));border-radius:10px;display:flex;align-items:center;justify-content:center;color:#00cfff;font-size:.8rem;font-weight:600;">✅ Reading Saved</div>
+                    </div>
+                    <div style="display:flex;justify-content:center;gap:.5rem;margin-top:1rem;">
+                        <div style="width:8px;height:8px;border-radius:50%;background:#00cfff;animation:pulseDot 1.5s ease-in-out infinite;"></div>
+                        <div style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2);"></div>
+                        <div style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2);"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== CTA ===================== -->
+<div class="cta-section">
+    <div class="cta-glow"></div>
+    <div class="container" style="position:relative;">
+        <div class="hero-badge" style="margin-bottom:1.5rem;">
+            <span class="pulse-dot"></span> Limited time — Free forever plan
+        </div>
+        <h2 class="cta-title">Ready to take control<br>of your energy?</h2>
+        <p class="cta-sub">Join thousands of users who track, save, and understand their utility usage smarter.</p>
+        <div class="hero-buttons" style="justify-content:center;">
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('capture') }}" class="btn-hero-primary">
+                    <i class="bi bi-camera-fill"></i> Scan a Meter Now
+                </a>
+            {% else %}
+                <a href="{{ url_for('register') }}" class="btn-hero-primary">
+                    <i class="bi bi-person-plus-fill"></i> Create Free Account
+                </a>
+                <a href="{{ url_for('login') }}" class="btn-hero-outline">
+                    <i class="bi bi-box-arrow-in-right"></i> Sign In
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ===================== HOME FOOTER ===================== -->
+<div class="home-footer">
+    © 2025 Meter Scanner Pro &nbsp;·&nbsp; Built with ⚡ for smarter homes
+</div>
+
+
+<!-- ===================== SCRIPTS ===================== -->
+<script>
+/* ---- Particles ---- */
+(function () {
+    const canvas = document.getElementById('particles-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resize() {
+        canvas.width  = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+    }
+
+    function rand(min, max) { return Math.random() * (max - min) + min; }
+
+    function createParticle() {
+        return {
+            x: rand(0, canvas.width),
+            y: rand(0, canvas.height),
+            r: rand(1, 2.5),
+            vx: rand(-0.3, 0.3),
+            vy: rand(-0.6, -0.1),
+            alpha: rand(0.3, 0.9),
+            color: Math.random() > 0.5 ? '0,207,255' : '168,85,247'
+        };
+    }
+
+    function initParticles() {
+        particles = [];
+        const count = Math.floor((canvas.width * canvas.height) / 8000);
+        for (let i = 0; i < count; i++) particles.push(createParticle());
+    }
+
+    function drawParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            p.alpha -= 0.001;
+            if (p.y < 0 || p.alpha <= 0) Object.assign(p, createParticle(), { y: canvas.height });
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${p.color},${p.alpha})`;
+            ctx.fill();
+        });
+        requestAnimationFrame(drawParticles);
+    }
+
+    window.addEventListener('resize', () => { resize(); initParticles(); });
+    resize(); initParticles(); drawParticles();
+})();
+
+/* ---- Intersection Observer for reveal animations ---- */
+const revealTargets = document.querySelectorAll('.stat-item, .feature-card, .hiw-step');
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const el = entry.target;
+            const delay = el.dataset.delay || 0;
+            setTimeout(() => el.classList.add('visible'), Number(delay));
+            observer.unobserve(el);
+        }
+    });
+}, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
+
+revealTargets.forEach(el => observer.observe(el));
+
+/* ---- Counter animation ---- */
+function animateCounter(el, target, suffix) {
+    let start = 0;
+    const duration = 1800;
+    const step = timestamp => {
+        if (!start) start = timestamp;
+        const progress = Math.min((timestamp - start) / duration, 1);
+        const ease = progress < 0.5 ? 2 * progress * progress : -1 + (4 - 2 * progress) * progress;
+        el.querySelector('.stat-number').textContent = Math.floor(ease * target).toLocaleString() + suffix;
+        if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+}
+
+const statObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const el    = entry.target;
+            const tgt   = parseInt(el.dataset.target);
+            const suf   = el.dataset.suffix || '';
+            animateCounter(el, tgt, suf);
+            statObserver.unobserve(el);
+        }
+    });
+}, { threshold: 0.1, rootMargin: '0px 0px -20px 0px' });
+
+document.querySelectorAll('.stat-item').forEach(el => statObserver.observe(el));
+
+/* ---- Animated phone reading ---- */
+const readings = ['0472', '1293', '0847', '2056', '1634'];
+let ri = 0;
+setInterval(() => {
+    ri = (ri + 1) % readings.length;
+    const el = document.getElementById('phone-counter');
+    if (el) {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            el.textContent = readings[ri];
+            el.style.transition = 'all 0.4s ease';
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+        }, 300);
+    }
+}, 2500);
+</script>
+{% endblock %}

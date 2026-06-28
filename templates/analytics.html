@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">Analytics Dashboard</h1>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title">Total Readings</h5>
+                <h2 class="display-4">{{ total_readings or 0 }}</h2>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Recent Activity</h5>
+                {% if recent_activity %}
+                    <ul class="list-group">
+                    {% for activity in recent_activity %}
+                        <li class="list-group-item">
+                            Reading taken on {{ activity.timestamp }}
+                        </li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No recent activity</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Monthly Readings</h5>
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Readings by Day of Week</h5>
+                <canvas id="dailyChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Chart state
+let monthlyChart, dailyChart;
+
+function formatTimestamp(isoString) {
+    const date = new Date(isoString);
+    return date.toLocaleString(); // Uses device local time
+}
+
+async function updateDashboard() {
+    try {
+        const response = await fetch('{{ url_for("api_analytics_data") }}');
+        const data = await response.json();
+        
+        // Update Monthly Chart
+        const monthlyLabels = data.monthly_data.map(d => {
+            const [year, month] = d.month.split('-');
+            const date = new Date(year, parseInt(month) - 1);
+            return date.toLocaleString('default', { month: 'short', year: 'numeric' });
+        });
+        const monthlyValues = data.monthly_data.map(d => d.avg_reading);
+        
+        if (monthlyChart) {
+            monthlyChart.data.labels = monthlyLabels;
+            monthlyChart.data.datasets[0].data = monthlyValues;
+            monthlyChart.update('none'); // Update without animation for "real-time" feel
+        } else {
+            const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+            monthlyChart = new Chart(monthlyCtx, {
+                type: 'line',
+                data: {
+                    labels: monthlyLabels,
+                    datasets: [{
+                        label: 'Average Reading',
+                        data: monthlyValues,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        // Update Summary Stats (Real-time)
+        document.querySelector('.display-4').textContent = data.current_month_count + data.monthly_data.reduce((a, b) => a + b.reading_count, 0);
+
+    } catch (error) {
+        console.error('Error fetching analytics:', error);
+    }
+}
+
+// Initial load
+updateDashboard();
+
+// Poll every 10 seconds for real-time updates
+setInterval(updateDashboard, 10000);
+
+// Day of week chart (keep mostly static as it's historical, but could be updated too)
+const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+dailyChart = new Chart(dailyCtx, {
+    type: 'bar',
+    data: {
+        labels: JSON.parse('{{ days | safe }}'),
+        datasets: [{
+            label: 'Readings Distribution',
+            data: JSON.parse('{{ daily_counts | safe }}'),
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgb(54, 162, 235)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+});
+</script>
+{% endblock %}

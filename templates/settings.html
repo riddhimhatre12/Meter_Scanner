@@ -1,0 +1,991 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<style>
+/* ═══════════════════════════════
+   SETTINGS PAGE — PREMIUM UX
+═══════════════════════════════ */
+.settings-wrap {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+    animation: fadeInUp .5s ease-out both;
+}
+
+/* ── Page header ── */
+.pg-header {
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    margin-bottom: 2rem;
+}
+.pg-icon {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg,#4f8ef7,#7c5af7);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    box-shadow: 0 6px 20px rgba(79,142,247,0.35);
+    flex-shrink: 0;
+    animation: scaleIn .45s ease-out both;
+}
+.pg-title { margin: 0; font-size: 1.6rem; font-weight: 800; color: #e2e8f8; }
+.pg-sub { color: #6b7fa0; font-size: 0.84rem; margin-top: 0.15rem; }
+
+/* ── Layout grid ── */
+.settings-grid {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+/* ══ Sidebar nav ══ */
+.s-nav {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(79,142,247,0.18);
+    border-radius: 18px;
+    backdrop-filter: blur(14px);
+    overflow: hidden;
+    position: sticky;
+    top: 82px;
+}
+.s-nav-user {
+    padding: 1.25rem;
+    border-bottom: 1px solid rgba(79,142,247,0.14);
+    text-align: center;
+    background: linear-gradient(135deg,rgba(79,142,247,0.1),rgba(124,90,247,0.07));
+}
+.s-nav-avatar {
+    width: 58px; height: 58px;
+    background: linear-gradient(135deg,#4f8ef7,#7c5af7);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    margin: 0 auto 0.6rem;
+    box-shadow: 0 4px 14px rgba(79,142,247,0.4);
+}
+.s-nav-username { font-weight: 700; font-size: 0.88rem; color: #e2e8f8; }
+.s-nav-email { font-size: 0.72rem; color: #6b7fa0; margin-top: 0.1rem; }
+
+.s-nav-menu { padding: 0.6rem 0.5rem; }
+.s-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 1rem;
+    border-radius: 11px;
+    margin-bottom: 0.2rem;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: #7a90b8;
+    border: 1px solid transparent;
+    position: relative;
+}
+.s-nav-item i { font-size: 1rem; width: 18px; text-align: center; }
+.s-nav-item:hover {
+    background: rgba(79,142,247,0.1);
+    color: #4f8ef7;
+    border-color: rgba(79,142,247,0.2);
+    transform: translateX(3px);
+}
+.s-nav-item.active {
+    background: linear-gradient(135deg,rgba(79,142,247,0.2),rgba(124,90,247,0.15));
+    color: #fff;
+    border-color: rgba(79,142,247,0.35);
+    box-shadow: 0 3px 12px rgba(79,142,247,0.2);
+}
+.s-nav-item.active i { color: #7dc4ff; }
+.s-nav-item .nav-badge {
+    margin-left: auto;
+    background: linear-gradient(135deg,#ef4444,#f97316);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 0.1rem 0.42rem;
+    border-radius: 20px;
+    min-width: 18px;
+    text-align: center;
+}
+
+/* ══ Tab content panel ══ */
+.s-content .tab-content   { display: none; }
+.s-content .tab-content.active { display: block; animation: fadeInUp .3s ease-out both; }
+
+/* ── Section card ── */
+.s-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(79,142,247,0.18);
+    border-radius: 18px;
+    backdrop-filter: blur(12px);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    transition: border-color .25s;
+}
+.s-card:hover { border-color: rgba(79,142,247,0.32); }
+
+.s-card-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.1rem 1.5rem;
+    background: linear-gradient(135deg,rgba(79,142,247,0.12),rgba(124,90,247,0.07));
+    border-bottom: 1px solid rgba(79,142,247,0.15);
+}
+.s-card-head-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.s-card-head h5 { margin: 0; font-size: 0.95rem; font-weight: 700; color: #e2e8f8; }
+.s-card-head p  { margin: 0; font-size: 0.76rem; color: #6b7fa0; }
+.s-card-body { padding: 1.75rem; }
+
+/* ── Profile avatar row ── */
+.avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.25rem;
+    background: rgba(79,142,247,0.06);
+    border: 1px solid rgba(79,142,247,0.15);
+    border-radius: 14px;
+    margin-bottom: 1.5rem;
+}
+.avatar-big {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg,#4f8ef7,#7c5af7);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 18px rgba(79,142,247,0.35);
+    cursor: pointer;
+    transition: transform .2s;
+}
+.avatar-big:hover { transform: scale(1.06); }
+.avatar-info h6 { color: #e2e8f8; font-weight: 700; margin: 0 0 0.2rem; font-size: 0.9rem; }
+.avatar-info p  { color: #6b7fa0; font-size: 0.78rem; margin: 0; }
+
+/* ── Form fields ── */
+.field-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.field-group.full { grid-template-columns: 1fr; }
+.field-wrap { display: flex; flex-direction: column; gap: 0.4rem; }
+.field-label {
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #6b7fa0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+.field-input, .field-select, .field-textarea {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(79,142,247,0.2);
+    border-radius: 11px;
+    padding: 0.72rem 1rem;
+    color: #e2e8f8;
+    font-size: 0.88rem;
+    outline: none;
+    transition: all .22s;
+    width: 100%;
+}
+.field-input::placeholder,
+.field-textarea::placeholder { color: #3a4f6a; }
+.field-input:focus,
+.field-select:focus,
+.field-textarea:focus {
+    background: rgba(79,142,247,0.1);
+    border-color: #4f8ef7;
+    box-shadow: 0 0 0 3px rgba(79,142,247,0.18);
+}
+.field-input[readonly] { opacity: .6; cursor: default; }
+.field-select option { background: #111827; }
+
+/* ── Action row (save button) ── */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: .75rem;
+    margin-top: 1.5rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid rgba(79,142,247,0.12);
+}
+.btn-save {
+    background: linear-gradient(135deg,#4f8ef7,#7c5af7);
+    border: none;
+    border-radius: 11px;
+    padding: 0.65rem 1.6rem;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: all .22s;
+    box-shadow: 0 4px 14px rgba(79,142,247,0.3);
+    display: flex; align-items: center; gap: .45rem;
+}
+.btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 22px rgba(79,142,247,0.5);
+}
+.btn-cancel {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(79,142,247,0.2);
+    border-radius: 11px;
+    padding: 0.65rem 1.2rem;
+    color: #7a90b8;
+    font-weight: 600;
+    font-size: 0.86rem;
+    cursor: pointer;
+    transition: all .22s;
+}
+.btn-cancel:hover { background: rgba(255,255,255,0.1); color: #e2e8f8; }
+
+/* ── Security section ── */
+.security-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.1rem 1.25rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(79,142,247,0.12);
+    border-radius: 12px;
+    margin-bottom: 0.85rem;
+    transition: border-color .2s;
+}
+.security-row:hover { border-color: rgba(79,142,247,0.3); }
+.security-row .sr-info h6 { color: #e2e8f8; font-size: 0.88rem; font-weight: 700; margin: 0 0 0.15rem; }
+.security-row .sr-info p  { color: #6b7fa0; font-size: 0.78rem; margin: 0; }
+.security-row .sr-icon { font-size: 1.4rem; color: #4f8ef7; margin-right: 1rem; }
+
+/* toggle */
+.form-switch .form-check-input { width: 2.6em; height: 1.35em; cursor: pointer; }
+.form-check-input:checked { background-color:#4f8ef7; border-color:#4f8ef7; }
+
+/* ── Notification items ── */
+.notif-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.2rem;
+    border-radius: 12px;
+    border: 1px solid rgba(79,142,247,0.1);
+    margin-bottom: 0.75rem;
+    transition: all .2s;
+    background: rgba(255,255,255,0.02);
+}
+.notif-item:hover { background: rgba(79,142,247,0.06); border-color: rgba(79,142,247,0.25); }
+.notif-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+    margin-right: 1rem;
+}
+.notif-text h6 { color: #e2e8f8; font-size: 0.88rem; font-weight: 700; margin: 0 0 0.1rem; }
+.notif-text p  { color: #6b7fa0; font-size: 0.78rem; margin: 0; }
+
+/* ── Complaint ── */
+.priority-row {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+.priority-btn {
+    flex: 1;
+    min-width: 80px;
+    padding: .55rem .4rem;
+    border-radius: 10px;
+    border: 1px solid rgba(79,142,247,0.2);
+    background: rgba(255,255,255,0.04);
+    color: #7a90b8;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+}
+.priority-btn:hover { border-color: #4f8ef7; color: #4f8ef7; background: rgba(79,142,247,0.1); }
+.priority-btn.active { background: linear-gradient(135deg,#4f8ef7,#7c5af7); color:#fff; border-color:transparent; }
+.priority-btn.p-low.active    { background: linear-gradient(135deg,#11998e,#38ef7d); }
+.priority-btn.p-med.active    { background: linear-gradient(135deg,#f7971e,#ffd200); color:#111; }
+.priority-btn.p-high.active   { background: linear-gradient(135deg,#f97316,#ef4444); }
+.priority-btn.p-urgent.active { background: linear-gradient(135deg,#dc2626,#7c2020); }
+
+/* ── Complaint history item ── */
+.complaint-item {
+    padding: 1rem 1.2rem;
+    border: 1px solid rgba(79,142,247,0.15);
+    border-radius: 12px;
+    margin-bottom: 0.8rem;
+    transition: border-color .2s;
+}
+.complaint-item:hover { border-color: rgba(79,142,247,0.35); }
+.c-id { font-weight: 700; color: #4f8ef7; font-size: 0.8rem; }
+.c-status { padding: .18rem .6rem; border-radius: 20px; font-size: .72rem; font-weight: 800; }
+.c-pending  { background: rgba(247,151,30,.15); color:#ffd200; border:1px solid rgba(247,151,30,.3); }
+.c-resolved { background: rgba(17,153,142,.15); color:#38ef7d; border:1px solid rgba(17,153,142,.3); }
+.c-title { color: #e2e8f8; font-size: 0.88rem; font-weight: 600; margin: 0.3rem 0 0.1rem; }
+.c-date { color: #6b7fa0; font-size: 0.76rem; }
+
+/* ── Contact option ── */
+.contact-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.2rem;
+    border: 1px solid rgba(79,142,247,0.15);
+    border-radius: 12px;
+    margin-bottom: 0.8rem;
+    transition: all .22s;
+    cursor: pointer;
+}
+.contact-card:hover {
+    background: rgba(79,142,247,0.08);
+    border-color: rgba(79,142,247,0.4);
+    transform: translateX(4px);
+}
+.contact-icon {
+    width: 42px; height: 42px;
+    border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+.contact-card h6 { color: #e2e8f8; font-size: 0.88rem; font-weight: 700; margin: 0 0 .1rem; }
+.contact-card p  { color: #6b7fa0; font-size: 0.8rem; margin: 0; }
+
+/* ── FAQ accordion ── */
+.faq-item {
+    border: 1px solid rgba(79,142,247,0.15);
+    border-radius: 12px;
+    margin-bottom: 0.7rem;
+    overflow: hidden;
+}
+.faq-q {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.9rem 1.1rem;
+    cursor: pointer;
+    color: #c5d5f0;
+    font-size: 0.88rem;
+    font-weight: 600;
+    user-select: none;
+    transition: background .2s;
+}
+.faq-q:hover { background: rgba(79,142,247,0.08); }
+.faq-q .faq-toggle { font-size: 0.7rem; color: #4f8ef7; transition: transform .25s; }
+.faq-item.open .faq-toggle { transform: rotate(180deg); }
+.faq-a {
+    display: none;
+    padding: 0 1.1rem 1rem;
+    color: #7a90b8;
+    font-size: 0.83rem;
+    line-height: 1.65;
+    border-top: 1px solid rgba(79,142,247,0.1);
+}
+.faq-item.open .faq-a { display: block; animation: fadeInUp .25s ease-out both; }
+
+/* ── About ── */
+.about-logo {
+    width: 72px; height: 72px;
+    background: linear-gradient(135deg,#4f8ef7,#7c5af7);
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto 1rem;
+    box-shadow: 0 8px 28px rgba(79,142,247,0.35);
+}
+.about-feature {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.8rem 1rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(79,142,247,0.12);
+    border-radius: 11px;
+    margin-bottom: 0.6rem;
+    transition: all .2s;
+}
+.about-feature:hover { background: rgba(79,142,247,0.08); border-color: rgba(79,142,247,0.3); }
+.about-feature .af-icon { font-size: 1.2rem; }
+.about-feature h6 { margin: 0; color: #e2e8f8; font-size: 0.86rem; font-weight: 700; }
+.about-feature p  { margin: 0; color: #6b7fa0; font-size: 0.75rem; }
+
+/* ── Success toast ── */
+.settings-toast {
+    position: fixed; bottom: 2rem; right: 2rem;
+    background: linear-gradient(135deg,rgba(17,153,142,.95),rgba(56,239,125,.9));
+    color: #fff;
+    padding: 0.85rem 1.4rem;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    z-index: 9999;
+    box-shadow: 0 10px 30px rgba(0,0,0,.4);
+    display: flex; align-items: center; gap: .6rem;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all .35s cubic-bezier(.34,1.56,.64,1);
+    pointer-events: none;
+}
+.settings-toast.show { transform: translateY(0); opacity: 1; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+    .settings-grid { grid-template-columns: 1fr; }
+    .s-nav { position: static; }
+    .s-nav-menu { display: flex; flex-wrap: wrap; gap: .35rem; padding: .5rem; }
+    .s-nav-item { flex: 1; min-width: 120px; justify-content: center; }
+    .field-group { grid-template-columns: 1fr; }
+}
+</style>
+
+<!-- Toast -->
+<div class="settings-toast" id="settings-toast">
+    <i class="bi bi-check-circle-fill"></i>
+    <span id="toast-msg">Saved successfully!</span>
+</div>
+
+<div class="settings-wrap">
+    <!-- Page header -->
+    <div class="pg-header anim-fade-down">
+        <div class="pg-icon">⚙️</div>
+        <div>
+            <h1 class="pg-title">Settings</h1>
+            <p class="pg-sub">Manage your profile, security, and preferences</p>
+        </div>
+    </div>
+
+    <div class="settings-grid">
+        <!-- ══ Sidebar ══ -->
+        <div class="s-nav anim-fade-left">
+            <div class="s-nav-user">
+                <div class="s-nav-avatar">👤</div>
+                <div class="s-nav-username">{{ current_user.username }}</div>
+                <div class="s-nav-email">{{ current_user.email }}</div>
+            </div>
+            <nav class="s-nav-menu">
+                <div class="s-nav-item active" data-tab="profile">
+                    <i class="bi bi-person-fill"></i> Profile
+                </div>
+                <div class="s-nav-item" data-tab="account">
+                    <i class="bi bi-shield-lock-fill"></i> Account
+                </div>
+                <div class="s-nav-item" data-tab="notifications">
+                    <i class="bi bi-bell-fill"></i> Notifications
+                </div>
+                <div class="s-nav-item" data-tab="complaint">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Complaint
+                    <span class="nav-badge">2</span>
+                </div>
+                <div class="s-nav-item" data-tab="help">
+                    <i class="bi bi-question-circle-fill"></i> Help
+                </div>
+                <div class="s-nav-item" data-tab="about">
+                    <i class="bi bi-info-circle-fill"></i> About
+                </div>
+            </nav>
+        </div>
+
+        <!-- ══ Main content ══ -->
+        <div class="s-content anim-fade-right">
+
+            <!-- ── Profile ── -->
+            <div class="tab-content active" id="profile">
+                <div class="s-card">
+                    <div class="s-card-head">
+                        <div class="s-card-head-icon" style="background:linear-gradient(135deg,#4f8ef7,#7c5af7)">👤</div>
+                        <div>
+                            <h5>Profile Information</h5>
+                            <p>Update your personal details and photo</p>
+                        </div>
+                    </div>
+                    <div class="s-card-body">
+                        <div class="avatar-row">
+                            <div class="avatar-big" onclick="document.getElementById('avatar-input').click()" title="Change photo">👤</div>
+                            <div class="avatar-info">
+                                <h6>{{ current_user.username }}</h6>
+                                <p>Click the avatar to change your photo</p>
+                                <p style="color:#4f8ef7;font-size:.75rem;margin-top:.3rem">JPG, PNG or GIF · Max 5MB</p>
+                            </div>
+                            <input type="file" id="avatar-input" accept="image/*" style="display:none">
+                        </div>
+                        <form id="profileForm" onsubmit="saveForm(event,'Profile updated!')">
+                            <div class="field-group">
+                                <div class="field-wrap">
+                                    <label class="field-label"><i class="bi bi-person"></i> First Name</label>
+                                    <input class="field-input" type="text" id="firstName" value="{{ current_user.first_name or '' }}" placeholder="John">
+                                </div>
+                                <div class="field-wrap">
+                                    <label class="field-label"><i class="bi bi-person"></i> Last Name</label>
+                                    <input class="field-input" type="text" id="lastName" value="{{ current_user.last_name or '' }}" placeholder="Doe">
+                                </div>
+                            </div>
+                            <div class="field-group full">
+                                <div class="field-wrap">
+                                    <label class="field-label"><i class="bi bi-envelope"></i> Email Address</label>
+                                    <input class="field-input" type="email" value="{{ current_user.email }}" readonly placeholder="john@email.com">
+                                </div>
+                            </div>
+                            <div class="field-group">
+                                <div class="field-wrap">
+                                    <label class="field-label"><i class="bi bi-telephone"></i> Phone Number</label>
+                                    <input class="field-input" type="tel" id="phone" value="{{ current_user.phone or '' }}" placeholder="+91 98765 43210">
+                                </div>
+                                <div class="field-wrap">
+                                    <label class="field-label"><i class="bi bi-geo-alt"></i> City</label>
+                                    <input class="field-input" type="text" placeholder="Mumbai">
+                                </div>
+                            </div>
+                            <div class="field-group full">
+                                <div class="field-wrap">
+                                    <label class="field-label"><i class="bi bi-house"></i> Address</label>
+                                    <textarea class="field-input field-textarea" id="address" rows="3" placeholder="Enter your full address">{{ current_user.address or '' }}</textarea>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn-cancel">Cancel</button>
+                                <button type="submit" class="btn-save"><i class="bi bi-save-fill"></i> Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Account ── -->
+            <div class="tab-content" id="account">
+                <div class="s-card">
+                    <div class="s-card-head">
+                        <div class="s-card-head-icon" style="background:linear-gradient(135deg,#f7971e,#ffd200)">🛡️</div>
+                        <div>
+                            <h5>Change Password</h5>
+                            <p>Keep your account secure with a strong password</p>
+                        </div>
+                    </div>
+                    <div class="s-card-body">
+                        <form id="passwordForm" onsubmit="saveForm(event,'Password updated!')">
+                            <div class="field-group full">
+                                <div class="field-wrap">
+                                    <label class="field-label"><i class="bi bi-lock"></i> Current Password</label>
+                                    <input class="field-input" type="password" id="currentPassword" placeholder="Enter current password" required>
+                                </div>
+                            </div>
+                            <div class="field-group">
+                                <div class="field-wrap">
+                                    <label class="field-label"><i class="bi bi-lock-fill"></i> New Password</label>
+                                    <input class="field-input" type="password" id="newPassword" placeholder="Min 8 characters" required>
+                                </div>
+                                <div class="field-wrap">
+                                    <label class="field-label"><i class="bi bi-lock-fill"></i> Confirm Password</label>
+                                    <input class="field-input" type="password" id="confirmPassword" placeholder="Repeat new password" required>
+                                </div>
+                            </div>
+                            <!-- Password strength -->
+                            <div style="margin-bottom:1rem">
+                                <div style="display:flex;justify-content:space-between;margin-bottom:.35rem">
+                                    <span style="font-size:.75rem;color:#6b7fa0">Password strength</span>
+                                    <span id="strength-text" style="font-size:.75rem;color:#6b7fa0">—</span>
+                                </div>
+                                <div style="height:5px;background:rgba(255,255,255,0.07);border-radius:4px;overflow:hidden">
+                                    <div id="strength-bar" style="height:100%;width:0;border-radius:4px;transition:all .35s"></div>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn-cancel" onclick="document.getElementById('passwordForm').reset()">Reset</button>
+                                <button type="submit" class="btn-save"><i class="bi bi-shield-check"></i> Update Password</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Security options -->
+                <div class="s-card">
+                    <div class="s-card-head">
+                        <div class="s-card-head-icon" style="background:linear-gradient(135deg,#11998e,#38ef7d)">🔐</div>
+                        <div>
+                            <h5>Security Options</h5>
+                            <p>Manage additional security settings</p>
+                        </div>
+                    </div>
+                    <div class="s-card-body">
+                        <div class="security-row">
+                            <i class="bi bi-phone-fill sr-icon"></i>
+                            <div class="sr-info" style="flex:1">
+                                <h6>Two-Factor Authentication</h6>
+                                <p>Add an extra layer of security via SMS code</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="twoFA">
+                            </div>
+                        </div>
+                        <div class="security-row">
+                            <i class="bi bi-door-closed-fill sr-icon"></i>
+                            <div class="sr-info" style="flex:1">
+                                <h6>Active Sessions</h6>
+                                <p>You are currently logged in from 1 device</p>
+                            </div>
+                            <button class="btn-cancel" style="font-size:.78rem;padding:.4rem .8rem" onclick="showToast('All other sessions ended!','#ef4444')">Sign Out Others</button>
+                        </div>
+                        <div class="security-row">
+                            <i class="bi bi-trash3-fill sr-icon" style="color:#ef4444"></i>
+                            <div class="sr-info" style="flex:1">
+                                <h6 style="color:#ef9090">Delete Account</h6>
+                                <p>Permanently delete your account and all data</p>
+                            </div>
+                            <button class="btn-cancel" style="font-size:.78rem;padding:.4rem .8rem;color:#ef4444;border-color:#ef444444">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Notifications ── -->
+            <div class="tab-content" id="notifications">
+                <div class="s-card">
+                    <div class="s-card-head">
+                        <div class="s-card-head-icon" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">🔔</div>
+                        <div>
+                            <h5>Notification Preferences</h5>
+                            <p>Choose how and when you get notified</p>
+                        </div>
+                    </div>
+                    <div class="s-card-body">
+                        <div class="notif-item">
+                            <div class="notif-icon" style="background:rgba(79,142,247,0.15)">📧</div>
+                            <div class="notif-text" style="flex:1">
+                                <h6>Email Notifications</h6>
+                                <p>Daily meter reading summaries and bill alerts</p>
+                            </div>
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" id="emailNotif" checked>
+                            </div>
+                        </div>
+                        <div class="notif-item">
+                            <div class="notif-icon" style="background:rgba(247,151,30,0.15)">📱</div>
+                            <div class="notif-text" style="flex:1">
+                                <h6>SMS Alerts</h6>
+                                <p>Critical alerts via SMS — high usage, outages</p>
+                            </div>
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" id="smsNotif">
+                            </div>
+                        </div>
+                        <div class="notif-item">
+                            <div class="notif-icon" style="background:rgba(17,153,142,0.15)">📊</div>
+                            <div class="notif-text" style="flex:1">
+                                <h6>Monthly Reports</h6>
+                                <p>Receive your monthly consumption report by email</p>
+                            </div>
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" id="monthlyNotif" checked>
+                            </div>
+                        </div>
+                        <div class="notif-item">
+                            <div class="notif-icon" style="background:rgba(124,90,247,0.15)">💰</div>
+                            <div class="notif-text" style="flex:1">
+                                <h6>Bill Reminders</h6>
+                                <p>7-day and 1-day reminders before payment due</p>
+                            </div>
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" id="billNotif" checked>
+                            </div>
+                        </div>
+                        <div class="notif-item">
+                            <div class="notif-icon" style="background:rgba(239,68,68,0.12)">⚡</div>
+                            <div class="notif-text" style="flex:1">
+                                <h6>High Usage Alerts</h6>
+                                <p>Alert when usage exceeds your monthly threshold</p>
+                            </div>
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" id="usageNotif" checked>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn-save" onclick="showToast('Notification preferences saved!')"><i class="bi bi-save-fill"></i> Save Preferences</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Complaint ── -->
+            <div class="tab-content" id="complaint">
+                <div class="s-card">
+                    <div class="s-card-head">
+                        <div class="s-card-head-icon" style="background:linear-gradient(135deg,#f97316,#ef4444)">⚠️</div>
+                        <div>
+                            <h5>File a Complaint</h5>
+                            <p>Report billing issues, meter problems, or service quality</p>
+                        </div>
+                    </div>
+                    <div class="s-card-body">
+                        <form id="complaintForm" onsubmit="saveForm(event,'Complaint submitted! We\'ll get back to you.')">
+                            <div class="field-group">
+                                <div class="field-wrap">
+                                    <label class="field-label"><i class="bi bi-tag"></i> Complaint Type</label>
+                                    <select class="field-input field-select" id="cType" required>
+                                        <option value="">Select type...</option>
+                                        <option value="billing">💰 Billing Issue</option>
+                                        <option value="meter">📟 Meter Problem</option>
+                                        <option value="service">⭐ Service Quality</option>
+                                        <option value="technical">🔧 Technical Issue</option>
+                                        <option value="other">📋 Other</option>
+                                    </select>
+                                </div>
+                                <div class="field-wrap">
+                                    <label class="field-label"><i class="bi bi-pencil"></i> Subject</label>
+                                    <input class="field-input" type="text" id="cSubject" placeholder="Brief subject line" required>
+                                </div>
+                            </div>
+                            <div class="field-group full">
+                                <div class="field-wrap">
+                                    <label class="field-label"><i class="bi bi-chat-text"></i> Description</label>
+                                    <textarea class="field-input field-textarea" id="cDesc" rows="4" placeholder="Describe your issue in detail..." required></textarea>
+                                </div>
+                            </div>
+                            <div class="field-wrap" style="margin-bottom:1rem">
+                                <label class="field-label" style="margin-bottom:.5rem"><i class="bi bi-flag"></i> Priority</label>
+                                <div class="priority-row" id="priority-row">
+                                    <div class="priority-btn p-low active" onclick="setPriority(this,'low')">🟢 Low</div>
+                                    <div class="priority-btn p-med" onclick="setPriority(this,'medium')">🟡 Medium</div>
+                                    <div class="priority-btn p-high" onclick="setPriority(this,'high')">🔴 High</div>
+                                    <div class="priority-btn p-urgent" onclick="setPriority(this,'urgent')">🚨 Urgent</div>
+                                </div>
+                                <input type="hidden" id="cPriority" value="low">
+                            </div>
+                            <div class="field-group full">
+                                <div class="field-wrap">
+                                    <label class="field-label"><i class="bi bi-paperclip"></i> Attachment <span style="color:#3a4f6a">(Optional)</span></label>
+                                    <input class="field-input" type="file" accept="image/*,.pdf,.doc,.docx">
+                                    <span style="font-size:.72rem;color:#3a4f6a;margin-top:.2rem">Supported: JPG, PNG, PDF, DOC · Max 10MB</span>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn-cancel" onclick="document.getElementById('complaintForm').reset()">Clear</button>
+                                <button type="submit" class="btn-save"><i class="bi bi-send-fill"></i> Submit Complaint</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Recent complaints -->
+                <div class="s-card">
+                    <div class="s-card-head">
+                        <div class="s-card-head-icon" style="background:linear-gradient(135deg,#7c5af7,#a855f7)">📋</div>
+                        <div>
+                            <h5>Recent Complaints</h5>
+                            <p>Track the status of your submitted complaints</p>
+                        </div>
+                    </div>
+                    <div class="s-card-body">
+                        <div class="complaint-item">
+                            <div style="display:flex;justify-content:space-between;align-items:center">
+                                <span class="c-id">#CMP-2024-001</span>
+                                <span class="c-status c-pending">⏳ Pending</span>
+                            </div>
+                            <div class="c-title">Billing Issue — Incorrect Reading Recorded</div>
+                            <div class="c-date">Submitted: Jan 15, 2024</div>
+                        </div>
+                        <div class="complaint-item">
+                            <div style="display:flex;justify-content:space-between;align-items:center">
+                                <span class="c-id">#CMP-2024-002</span>
+                                <span class="c-status c-resolved">✅ Resolved</span>
+                            </div>
+                            <div class="c-title">Meter Problem — Digital Display Not Working</div>
+                            <div class="c-date">Resolved: Jan 10, 2024 · Response: 2 days</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Help ── -->
+            <div class="tab-content" id="help">
+                <div class="s-card">
+                    <div class="s-card-head">
+                        <div class="s-card-head-icon" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">❓</div>
+                        <div>
+                            <h5>Frequently Asked Questions</h5>
+                            <p>Common questions about Meter Scanner Pro</p>
+                        </div>
+                    </div>
+                    <div class="s-card-body">
+                        <div class="faq-item" onclick="toggleFaq(this)">
+                            <div class="faq-q">How do I scan my meter? <i class="bi bi-chevron-down faq-toggle"></i></div>
+                            <div class="faq-a">Navigate to the Scan page, allow camera access, centre the meter display in the frame with good lighting, and tap Capture. The AI will automatically detect and record the reading in seconds.</div>
+                        </div>
+                        <div class="faq-item" onclick="toggleFaq(this)">
+                            <div class="faq-q">What if the scanner doesn't detect my meter? <i class="bi bi-chevron-down faq-toggle"></i></div>
+                            <div class="faq-a">Ensure the meter display is fully visible, well-lit, and free of shadows or glare. Try moving closer (15–25 cm). If it still fails, use the Manual Entry option on the Scan screen.</div>
+                        </div>
+                        <div class="faq-item" onclick="toggleFaq(this)">
+                            <div class="faq-q">How is my electricity bill calculated? <i class="bi bi-chevron-down faq-toggle"></i></div>
+                            <div class="faq-a">Bills are calculated using Indian electricity slab rates (₹2.50–₹8.50 per unit) plus a meter rent of ₹25 and 18% GST. Visit the Bill Calculator for a detailed breakdown.</div>
+                        </div>
+                        <div class="faq-item" onclick="toggleFaq(this)">
+                            <div class="faq-q">How do I export my reading data? <i class="bi bi-chevron-down faq-toggle"></i></div>
+                            <div class="faq-a">Go to the Readings page and click the Export CSV button. This downloads all your past readings with timestamps, OCR confidence, and notes into a spreadsheet-ready file.</div>
+                        </div>
+                        <div class="faq-item" onclick="toggleFaq(this)">
+                            <div class="faq-q">Is my data secure? <i class="bi bi-chevron-down faq-toggle"></i></div>
+                            <div class="faq-a">Yes. All data is stored securely with encrypted passwords. Google OAuth uses industry-standard OAuth 2.0. We never store raw passwords and all connections use HTTPS in production.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact -->
+                <div class="s-card">
+                    <div class="s-card-head">
+                        <div class="s-card-head-icon" style="background:linear-gradient(135deg,#43e97b,#38f9d7)">🎧</div>
+                        <div>
+                            <h5>Contact Support</h5>
+                            <p>Get in touch with our team</p>
+                        </div>
+                    </div>
+                    <div class="s-card-body">
+                        <div class="contact-card">
+                            <div class="contact-icon" style="background:rgba(79,142,247,0.15)">📧</div>
+                            <div>
+                                <h6>Email Support</h6>
+                                <p>support@meterscanner.com · Reply within 24h</p>
+                            </div>
+                        </div>
+                        <div class="contact-card">
+                            <div class="contact-icon" style="background:rgba(17,153,142,0.15)">📞</div>
+                            <div>
+                                <h6>Phone Helpline</h6>
+                                <p>1800-123-4567 · 24/7 Toll-free</p>
+                            </div>
+                        </div>
+                        <div class="contact-card">
+                            <div class="contact-icon" style="background:rgba(247,151,30,0.15)">🤖</div>
+                            <div>
+                                <h6>MeterBot AI Chat</h6>
+                                <p>Instant answers — click the robot icon anytime</p>
+                            </div>
+                        </div>
+                        <div class="contact-card">
+                            <div class="contact-icon" style="background:rgba(124,90,247,0.15)">💬</div>
+                            <div>
+                                <h6>Support Hours</h6>
+                                <p>Human agents: Mon–Sat 9 AM – 6 PM IST</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── About ── -->
+            <div class="tab-content" id="about">
+                <div class="s-card">
+                    <div class="s-card-head">
+                        <div class="s-card-head-icon" style="background:linear-gradient(135deg,#4f8ef7,#7c5af7)">ℹ️</div>
+                        <div>
+                            <h5>About Meter Scanner Pro</h5>
+                            <p>Version 2.0.1 · Built with ❤️ in India</p>
+                        </div>
+                    </div>
+                    <div class="s-card-body" style="text-align:center">
+                        <div class="about-logo">⚡</div>
+                        <h4 style="color:#e2e8f8;font-weight:800;margin-bottom:.3rem">Meter Scanner Pro</h4>
+                        <div class="badge mb-3" style="background:rgba(79,142,247,0.2);color:#4f8ef7;border:1px solid rgba(79,142,247,0.3);font-size:.75rem;padding:.35rem .9rem">v2.0.1</div>
+                        <p style="color:#7a90b8;font-size:.875rem;max-width:460px;margin:0 auto 1.75rem;line-height:1.7">
+                            AI-powered meter reading and utility management. Scan any meter instantly with computer vision, track bills, analyze usage trends, and save energy — all in one place.
+                        </p>
+                        <div style="text-align:left;max-width:460px;margin:0 auto">
+                            <div class="about-feature">
+                                <span class="af-icon">🔍</span>
+                                <div><h6>OCR Vision</h6><p>Instant meter reading with AI-powered camera recognition</p></div>
+                            </div>
+                            <div class="about-feature">
+                                <span class="af-icon">📊</span>
+                                <div><h6>Smart Analytics</h6><p>Usage trends, comparisons, and efficiency scoring</p></div>
+                            </div>
+                            <div class="about-feature">
+                                <span class="af-icon">🔒</span>
+                                <div><h6>Secure & Private</h6><p>Encrypted data, Google OAuth, HTTPS throughout</p></div>
+                            </div>
+                            <div class="about-feature">
+                                <span class="af-icon">🤖</span>
+                                <div><h6>MeterBot AI</h6><p>24/7 intelligent assistant for all meter-related queries</p></div>
+                            </div>
+                        </div>
+                        <p style="color:#3a4f6a;font-size:.75rem;margin-top:2rem">© 2024 Meter Scanner Pro · All rights reserved</p>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /.s-content -->
+    </div><!-- /.settings-grid -->
+</div><!-- /.settings-wrap -->
+
+<script>
+// Tab navigation
+document.querySelectorAll('.s-nav-item').forEach(item => {
+    item.addEventListener('click', function() {
+        document.querySelectorAll('.s-nav-item').forEach(n => n.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById(this.dataset.tab).classList.add('active');
+    });
+});
+
+// Form submit
+function saveForm(e, msg) {
+    e.preventDefault();
+    const btn = e.target.querySelector('.btn-save');
+    if(btn){ btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving…'; btn.disabled = true; }
+    setTimeout(() => {
+        if(btn){ btn.innerHTML = '<i class="bi bi-save-fill"></i> Save Changes'; btn.disabled = false; }
+        showToast(msg);
+    }, 900);
+}
+
+// Toast
+function showToast(msg, color='#11998e') {
+    const t = document.getElementById('settings-toast');
+    document.getElementById('toast-msg').textContent = msg;
+    t.style.background = `linear-gradient(135deg,${color}ee,${color}cc)`;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// Priority selector
+function setPriority(el, val) {
+    document.querySelectorAll('.priority-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('cPriority').value = val;
+}
+
+// FAQ toggle
+function toggleFaq(el) {
+    el.classList.toggle('open');
+}
+
+// Password strength
+document.getElementById('newPassword').addEventListener('input', function() {
+    const v = this.value, bar = document.getElementById('strength-bar'), txt = document.getElementById('strength-text');
+    let score = 0;
+    if(v.length >= 8) score++;
+    if(/[A-Z]/.test(v)) score++;
+    if(/[0-9]/.test(v)) score++;
+    if(/[^A-Za-z0-9]/.test(v)) score++;
+    const levels = [{w:0,c:'transparent',t:'—'},{w:25,c:'#ef4444',t:'Weak'},{w:55,c:'#f7971e',t:'Fair'},{w:80,c:'#4facfe',t:'Good'},{w:100,c:'#38ef7d',t:'Strong'}];
+    const l = levels[score];
+    bar.style.width = l.w+'%'; bar.style.background = l.c; txt.textContent = l.t; txt.style.color = l.c;
+});
+</script>
+{% endblock %}
