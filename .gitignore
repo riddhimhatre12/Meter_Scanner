@@ -1,3 +1,4 @@
-/.env
-/.env.example
-/app.py
+.env
+venv/
+__pycache__/
+*.pyc
