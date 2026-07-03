@@ -792,22 +792,24 @@
                         </div>
                     </div>
                     <div class="s-card-body">
-                        <div class="complaint-item">
-                            <div style="display:flex;justify-content:space-between;align-items:center">
-                                <span class="c-id">#CMP-2024-001</span>
-                                <span class="c-status c-pending">⏳ Pending</span>
-                            </div>
-                            <div class="c-title">Billing Issue — Incorrect Reading Recorded</div>
-                            <div class="c-date">Submitted: Jan 15, 2024</div>
-                        </div>
-                        <div class="complaint-item">
-                            <div style="display:flex;justify-content:space-between;align-items:center">
-                                <span class="c-id">#CMP-2024-002</span>
-                                <span class="c-status c-resolved">✅ Resolved</span>
-                            </div>
-                            <div class="c-title">Meter Problem — Digital Display Not Working</div>
-                            <div class="c-date">Resolved: Jan 10, 2024 · Response: 2 days</div>
-                        </div>
+                        {% if complaints %}
+                            {% for c in complaints %}
+                                <div class="complaint-item">
+                                    <div style="display:flex;justify-content:space-between;align-items:center">
+                                        <span class="c-id">#{{ c.complaint_id }}</span>
+                                        {% if c.status == 'pending' %}
+                                            <span class="c-status c-pending">⏳ Pending</span>
+                                        {% else %}
+                                            <span class="c-status c-resolved">✅ {{ c.status.capitalize() }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="c-title">{{ c.subject }} ({{ c.type.capitalize() }})</div>
+                                    <div class="c-date">Submitted: {{ c.created_at }}</div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p style="color:#7a90b8;font-size:.875rem;text-align:center;padding:1.5rem 0">No complaints filed yet.</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -946,12 +948,82 @@ document.querySelectorAll('.s-nav-item').forEach(item => {
 // Form submit
 function saveForm(e, msg) {
     e.preventDefault();
-    const btn = e.target.querySelector('.btn-save');
+    const form = e.target;
+    const btn = form.querySelector('.btn-save');
+    const originalHtml = btn ? btn.innerHTML : '';
+    
     if(btn){ btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving…'; btn.disabled = true; }
-    setTimeout(() => {
-        if(btn){ btn.innerHTML = '<i class="bi bi-save-fill"></i> Save Changes'; btn.disabled = false; }
-        showToast(msg);
-    }, 900);
+    
+    let url = '';
+    let payload = {};
+    
+    if (form.id === 'profileForm') {
+        url = '/update_profile';
+        payload = {
+            first_name: document.getElementById('firstName').value,
+            last_name: document.getElementById('lastName').value,
+            phone: document.getElementById('phone').value,
+            address: document.getElementById('address').value
+        };
+    } else if (form.id === 'passwordForm') {
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        if (newPassword !== confirmPassword) {
+            showToast('Passwords do not match!', '#ef4444');
+            if(btn){ btn.innerHTML = originalHtml; btn.disabled = false; }
+            return;
+        }
+        url = '/change_password';
+        payload = {
+            current_password: document.getElementById('currentPassword').value,
+            new_password: newPassword
+        };
+    } else if (form.id === 'complaintForm') {
+        url = '/submit_complaint';
+        payload = {
+            type: document.getElementById('cType').value,
+            subject: document.getElementById('cSubject').value,
+            description: document.getElementById('cDesc').value,
+            priority: document.getElementById('cPriority').value,
+            contact_method: 'email'
+        };
+    } else {
+        setTimeout(() => {
+            if(btn){ btn.innerHTML = originalHtml; btn.disabled = false; }
+            showToast(msg);
+        }, 900);
+        return;
+    }
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(btn){ btn.innerHTML = originalHtml; btn.disabled = false; }
+        if (data.success) {
+            showToast(data.message || msg);
+            if (form.id === 'passwordForm') {
+                form.reset();
+                document.getElementById('strength-bar').style.width = '0%';
+                document.getElementById('strength-text').textContent = '—';
+            } else if (form.id === 'complaintForm') {
+                form.reset();
+                setTimeout(() => location.reload(), 1500);
+            }
+        } else {
+            showToast(data.error || 'An error occurred.', '#ef4444');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if(btn){ btn.innerHTML = originalHtml; btn.disabled = false; }
+        showToast('Connection error. Please try again.', '#ef4444');
+    });
 }
 
 // Toast

@@ -768,6 +768,8 @@ def google_login():
     session['oauth_state'] = state
 
     redirect_uri = url_for('google_callback', _external=True)
+    if '127.0.0.1' in redirect_uri:
+        redirect_uri = redirect_uri.replace('127.0.0.1', 'localhost')
     params = {
         'client_id': GOOGLE_CLIENT_ID,
         'redirect_uri': redirect_uri,
@@ -805,6 +807,8 @@ def google_callback():
 
     # Exchange code for tokens
     redirect_uri = url_for('google_callback', _external=True)
+    if '127.0.0.1' in redirect_uri:
+        redirect_uri = redirect_uri.replace('127.0.0.1', 'localhost')
     try:
         token_resp = requests.post(
             token_endpoint,
@@ -910,6 +914,7 @@ def register():
     
     if request.method == 'POST':
         username = request.form.get('username')
+        email = request.form.get('email', '')
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
         
@@ -934,8 +939,15 @@ def register():
                     flash('Username already exists', 'error')
                     return redirect(url_for('register'))
                 
-                c.execute("INSERT INTO users (username, password) VALUES (?, ?)",
-                         (username, hashed_password))
+                if email:
+                    c.execute("SELECT * FROM users WHERE email = ?", (email,))
+                    existing_email = c.fetchone()
+                    if existing_email:
+                        flash('Email already registered', 'error')
+                        return redirect(url_for('register'))
+                
+                c.execute("INSERT INTO users (username, password, email) VALUES (?, ?, ?)",
+                         (username, hashed_password, email))
                 conn.commit()
                 flash('Registration successful! Please login.', 'success')
                 return redirect(url_for('login'))
@@ -1052,7 +1064,24 @@ def meterbot():
 @login_required
 def settings():
     """Settings page with profile, account, and complaint options"""
-    return render_template("settings.html")
+    conn = get_db_connection()
+    complaints = []
+    if conn is not None:
+        try:
+            c = conn.cursor()
+            c.execute("""
+                SELECT complaint_id, type, subject, description, priority, status, created_at
+                FROM complaints
+                WHERE user_id = ?
+                ORDER BY created_at DESC
+                LIMIT 5
+            """, (current_user.id,))
+            complaints = c.fetchall()
+        except sqlite3.Error as e:
+            app.logger.error(f"Error fetching complaints: {e}")
+        finally:
+            conn.close()
+    return render_template("settings.html", complaints=complaints)
 
 @app.route('/update_profile', methods=['POST'])
 @login_required

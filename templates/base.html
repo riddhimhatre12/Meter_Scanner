@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
         :root {
-            /* ── Unified dark slate theme ── */
+            /* ── Unified dark slate theme (Default) ── */
             --primary-color:  #4f8ef7;
             --accent-color:   #7c5af7;
             --teal:           #00cfff;
@@ -21,9 +21,13 @@
             --bg-deep:   #0b1120;
             --bg-mid:    #111827;
             --surface:   rgba(255,255,255,0.05);
+            --card-bg:   rgba(255,255,255,0.05);
             --border:    rgba(79,142,247,0.18);
             --text:      #e2e8f8;
             --muted:     #8899bb;
+
+            --nav-bg: rgba(11,17,32,0.72);
+            --nav-bg-scrolled: rgba(11,17,32,0.92);
 
             --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
             --shadow-md: 0 4px 20px rgba(0,0,0,0.4);
@@ -36,6 +40,30 @@
             --dark-color: #e2e8f8;
             --white:      #ffffff;
             --light-color:#1e293b;
+            --modal-bg:   #111827;
+        }
+
+        /* ── Unified light slate theme override ── */
+        [data-bs-theme="light"] {
+            --bg-deep:   #f3f4f6;
+            --bg-mid:    #ffffff;
+            --surface:   rgba(79,142,247,0.05);
+            --card-bg:   #ffffff;
+            --border:    rgba(79,142,247,0.18);
+            --text:      #1f2937;
+            --muted:     #4b5563;
+
+            --nav-bg: rgba(255,255,255,0.72);
+            --nav-bg-scrolled: rgba(255,255,255,0.92);
+
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
+            --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+
+            --dark-color: #1f2937;
+            --white:      #111827;
+            --light-color:#ffffff;
+            --modal-bg:   #ffffff;
         }
 
         /* ── Base ── */
@@ -45,21 +73,22 @@
             min-height: 100vh;
             font-family: 'Segoe UI', system-ui, sans-serif;
             color: var(--text);
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
-        /* ── Navbar — dark, flush to hero, NO white gap ── */
+        /* ── Navbar ── */
         .navbar {
-            background: rgba(11,17,32,0.72) !important;
+            background: var(--nav-bg) !important;
             backdrop-filter: blur(18px);
             -webkit-backdrop-filter: blur(18px);
             border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
             z-index: 1030;
-            transition: background 0.4s ease;
+            transition: background 0.4s ease, border-color 0.4s ease;
         }
         /* When user scrolls, slightly more opaque */
-        .navbar.scrolled { background: rgba(11,17,32,0.92) !important; }
+        .navbar.scrolled { background: var(--nav-bg-scrolled) !important; }
 
         .navbar-brand {
             font-weight: 800;
@@ -72,7 +101,7 @@
         }
 
         .navbar-nav .nav-link {
-            color: rgba(226,232,248,0.85) !important;
+            color: var(--text) !important;
             font-weight: 600;
             font-size: 0.88rem;
             padding: 0.45rem 0.9rem;
@@ -80,15 +109,18 @@
             transition: all 0.25s ease;
             margin: 0 0.1rem;
             letter-spacing: 0.2px;
+            opacity: 0.85;
         }
         .navbar-nav .nav-link:hover {
             background: rgba(79,142,247,0.15);
             color: var(--primary-color) !important;
             transform: translateY(-1px);
+            opacity: 1;
         }
         .navbar-nav .nav-link.active {
             background: var(--primary-gradient);
             color: #fff !important;
+            opacity: 1;
         }
 
         .theme-toggle {
@@ -100,7 +132,7 @@
             border-radius: var(--border-radius);
             background: rgba(79,142,247,0.12);
             border: 1px solid var(--border);
-            color: rgba(226,232,248,0.85);
+            color: var(--text);
             font-weight: 600;
             font-size: 0.82rem;
             transition: all 0.25s ease;
@@ -137,12 +169,13 @@
 
         /* ── Cards ── */
         .card {
-            background: rgba(255,255,255,0.05);
+            background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: var(--border-radius-lg);
             box-shadow: var(--shadow-md);
             color: var(--text);
             backdrop-filter: blur(10px);
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
         .card-header, .card-footer {
             background: rgba(255,255,255,0.04);

@@ -8,7 +8,7 @@
     <style>
         *{box-sizing:border-box;margin:0;padding:0}
 
-        :root{
+        :root, [data-theme="dark"] {
             --accent:  #4f8ef7;
             --accent2: #7c5af7;
             --bg:      #0f1724;
@@ -20,6 +20,16 @@
             --bubble-bot: #1a2d50;
             --bubble-user: linear-gradient(135deg,#4f8ef7,#7c5af7);
             --radius: 18px;
+        }
+
+        [data-theme="light"] {
+            --bg:      #f3f4f6;
+            --surface: #ffffff;
+            --surface2:#e5e7eb;
+            --border:  rgba(79,142,247,.25);
+            --text:    #1f2937;
+            --muted:   #4b5563;
+            --bubble-bot: #e5e7eb;
         }
 
         body{
@@ -380,7 +390,9 @@ inputEl.addEventListener('keydown', e=>{
 /* Theme sync from parent */
 if(window.parent !== window){
     window.addEventListener('message', e=>{
-        if(e.data && e.data.type==='themeChange'){/* already dark-only */}
+        if(e.data && e.data.type==='themeChange'){
+            document.documentElement.setAttribute('data-theme', e.data.theme);
+        }
     });
     window.parent.postMessage({type:'themeRequest'},'*');
 }

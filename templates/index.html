@@ -843,7 +843,7 @@ revealTargets.forEach(el => observer.observe(el));
 /* ---- Counter animation ---- */
 function animateCounter(el, target, suffix) {
     let start = 0;
-    const duration = 1800;
+    const duration = 800;
     const step = timestamp => {
         if (!start) start = timestamp;
         const progress = Math.min((timestamp - start) / duration, 1);
