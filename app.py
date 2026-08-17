@@ -1,3 +1,7 @@
+"""
+Meter Scanner Pro — Main Flask Application.
+Handles routes, camera OCR, meter analytics, billing calculations, and MeterBot AI assistant.
+"""
 from flask import Flask, render_template, request, redirect, url_for, session, flash, Response, jsonify, send_file
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 import sqlite3
