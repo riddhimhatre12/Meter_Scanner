@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Maintenance & Support{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+    <div>
+        <h4 class="mb-1 font-weight-700"><i class="bi bi-calendar-check text-primary me-2"></i>Meter Maintenance & Servicing</h4>
+        <p class="text-secondary small mb-0">Schedule hardware inspections, track technician visits, and log meter calibration records</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-md-6">
+        <div class="card h-100">
+            <div class="card-header font-weight-600">Schedule Service Inspection</div>
+            <div class="card-body">
+                <form id="maintForm" onsubmit="event.preventDefault(); alert('Inspection request submitted successfully!');">
+                    <div class="mb-3">
+                        <label class="form-label">Service Type</label>
+                        <select class="form-select" required>
+                            <option value="">Select inspection type...</option>
+                            <option value="calibration">Meter Calibration Check</option>
+                            <option value="glass_clean">Display Glass Cleaning / Seal Repair</option>
+                            <option value="wiring">Service Wire Safety Audit</option>
+                            <option value="replacement">Meter Upgrade / Replacement</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Preferred Date</label>
+                        <input type="date" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Additional Notes</label>
+                        <textarea class="form-control" rows="3" placeholder="Describe any observed issues..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Schedule Technician Visit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-6">
+        <div class="card h-100">
+            <div class="card-header font-weight-600">Service & Inspection History</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Inspection</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Annual Meter Calibration</td>
+                                <td><small class="text-muted">2026-01-15</small></td>
+                                <td><span class="badge badge-success">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>Display Seal Inspection</td>
+                                <td><small class="text-muted">2025-08-10</small></td>
+                                <td><span class="badge badge-success">Completed</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -7,13 +7,15 @@
      HERO SECTION
 ============================================================ -->
 <style>
-    /* ---- Reset container for full-width hero, no gap ---- */
-    .container.mt-4.page-content { padding: 0; max-width: 100% !important; margin-top: 0 !important; }
+    /* ---- Reset container padding for full-screen hero ---- */
+    main.container-fluid { padding: 0 !important; }
 
     /* ---- Hero ---- */
     .hero-section {
         position: relative;
-        min-height: 100vh;
+        height: calc(100vh - 60px);
+        min-height: 520px;
+        max-height: 900px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -64,7 +66,7 @@
         position: relative;
         z-index: 3;
         text-align: center;
-        padding: 2rem;
+        padding: 1.5rem 1rem;
         max-width: 900px;
     }
 
@@ -75,13 +77,13 @@
         background: rgba(0,200,255,0.15);
         border: 1px solid rgba(0,200,255,0.4);
         color: #00cfff;
-        padding: 0.45rem 1.2rem;
+        padding: 0.4rem 1.1rem;
         border-radius: 50px;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         font-weight: 600;
         letter-spacing: 1.5px;
         text-transform: uppercase;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
         animation: fadeInDown 0.8s ease-out both;
         backdrop-filter: blur(10px);
     }
@@ -99,11 +101,11 @@
     }
 
     .hero-title {
-        font-size: clamp(2.5rem, 7vw, 5.5rem);
+        font-size: clamp(2.2rem, 5.5vw, 4.5rem);
         font-weight: 900;
         color: #fff;
         line-height: 1.1;
-        margin-bottom: 1.2rem;
+        margin-bottom: 0.85rem;
         animation: fadeInUp 0.9s ease-out 0.2s both;
         text-shadow: 0 0 40px rgba(0,180,255,0.4);
     }
@@ -122,10 +124,10 @@
     }
 
     .hero-subtitle {
-        font-size: clamp(1rem, 2.5vw, 1.35rem);
+        font-size: clamp(0.925rem, 1.8vw, 1.15rem);
         color: rgba(255,255,255,0.75);
-        margin-bottom: 2.5rem;
-        line-height: 1.7;
+        margin-bottom: 1.75rem;
+        line-height: 1.6;
         animation: fadeInUp 0.9s ease-out 0.4s both;
     }
 

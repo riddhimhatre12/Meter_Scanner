@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Multi-Meter Management{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+    <div>
+        <h4 class="mb-1 font-weight-700"><i class="bi bi-speedometer2 text-primary me-2"></i>Multi-Meter Connection Manager</h4>
+        <p class="text-secondary small mb-0">Track electricity, water, and gas meters across multiple residential and commercial connections</p>
+    </div>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addMeterModal">
+        <i class="bi bi-plus-circle-fill me-1"></i> Register New Meter
+    </button>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+        <div class="card p-3 h-100">
+            <div class="d-flex align-items-center gap-3">
+                <div class="brand-badge" style="background-color: var(--brand-primary);"><i class="bi bi-lightning-charge-fill"></i></div>
+                <div>
+                    <h6 class="mb-0 font-weight-700">Main Electricity Meter</h6>
+                    <small class="text-secondary">Consumer #EL-908234 · Primary Home</small>
+                </div>
+            </div>
+            <div class="mt-3 pt-2 border-top d-flex justify-content-between text-secondary small" style="border-color: var(--border-color) !important;">
+                <span>Status: <strong class="text-success">Active</strong></span>
+                <span>Avg: <strong>245 kWh/mo</strong></span>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="card p-3 h-100">
+            <div class="d-flex align-items-center gap-3">
+                <div class="brand-badge" style="background-color: var(--status-info);"><i class="bi bi-droplet-fill"></i></div>
+                <div>
+                    <h6 class="mb-0 font-weight-700">Water Utility Connection</h6>
+                    <small class="text-secondary">Meter #WT-441029 · Main Supply</small>
+                </div>
+            </div>
+            <div class="mt-3 pt-2 border-top d-flex justify-content-between text-secondary small" style="border-color: var(--border-color) !important;">
+                <span>Status: <strong class="text-success">Active</strong></span>
+                <span>Avg: <strong>14.2 m³/mo</strong></span>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="card p-3 h-100">
+            <div class="d-flex align-items-center gap-3">
+                <div class="brand-badge" style="background-color: var(--status-warning);"><i class="bi bi-fire"></i></div>
+                <div>
+                    <h6 class="mb-0 font-weight-700">PNG Natural Gas Line</h6>
+                    <small class="text-secondary">Consumer #GS-109283 · Kitchen</small>
+                </div>
+            </div>
+            <div class="mt-3 pt-2 border-top d-flex justify-content-between text-secondary small" style="border-color: var(--border-color) !important;">
+                <span>Status: <strong class="text-success">Active</strong></span>
+                <span>Avg: <strong>18.5 SCM/mo</strong></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Meter Modal -->
+<div class="modal fade" id="addMeterModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background-color: var(--modal-bg); border: 1px solid var(--border-color);">
+            <div class="modal-header border-bottom" style="border-color: var(--border-color) !important;">
+                <h6 class="modal-title font-weight-600">Register New Utility Meter</h6>
+                <button type="button" class="btn-close text-secondary shadow-none" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="addMeterForm">
+                    <div class="mb-3">
+                        <label class="form-label">Meter Label / Nickname</label>
+                        <input type="text" class="form-control" placeholder="e.g. Solar Inverter Meter" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Utility Type</label>
+                        <select class="form-select">
+                            <option value="electricity">Electricity (kWh)</option>
+                            <option value="water">Water Supply (m³)</option>
+                            <option value="gas">Piped Natural Gas (SCM)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Consumer / Meter Serial Number</label>
+                        <input type="text" class="form-control" placeholder="e.g. MTR-99823412" required>
+                    </div>
+                    <button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal" onclick="alert('Meter added successfully!')">
+                        Save Meter Connection
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

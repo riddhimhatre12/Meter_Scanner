@@ -1,525 +1,315 @@
 {% extends "base.html" %}
 
-{% block title %}Smart Dashboard{% endblock %}
+{% block title %}Dashboard{% endblock %}
 
 {% block content %}
 <style>
-/* ── Dashboard: unified dark theme override ── */
-.dashboard-container {
-    background: transparent;
-    min-height: calc(100vh - 68px);
-    padding: 0;
-    margin: -1.5rem -12px 0;  /* cancel base container padding cleanly */
-}
-
-.welcome-header {
-    background: linear-gradient(135deg, rgba(79,142,247,0.15) 0%, rgba(124,90,247,0.10) 100%);
-    border-bottom: 1px solid rgba(79,142,247,0.2);
-    padding: 1.5rem 2rem;
-    margin-bottom: 0;
-    animation: fadeInDown 0.5s ease-out both;
-}
-.welcome-header h1 {
-    background: linear-gradient(135deg,#e2e8f8,#a8c5f7);
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: 800; font-size: 1.8rem; margin-bottom: 0.25rem;
-}
-.welcome-header p { color: #8899bb; margin: 0; font-size: 0.92rem; }
-
-/* ── Stats cards ── */
-.stats-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 1.5rem;
-    margin-bottom: 1rem;
-    backdrop-filter: blur(10px);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-    position: relative; overflow: hidden;
-    animation: fadeInUp 0.5s ease-out both;
-    cursor: default;
-}
-.stats-card::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(135deg,#4f8ef7,#7c5af7);
-}
-.stats-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 16px 40px rgba(0,0,0,0.4);
-    border-color: rgba(79,142,247,0.4);
-}
-.stats-card:nth-child(1){ animation-delay:.05s }
-.stats-card:nth-child(2){ animation-delay:.12s }
-.stats-card:nth-child(3){ animation-delay:.19s }
-.stats-card:nth-child(4){ animation-delay:.26s }
-
-.stats-value {
-    font-size: 2.2rem; font-weight: 800;
-    background: linear-gradient(135deg,#4f8ef7,#00cfff);
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent;
-    line-height: 1.2;
-}
-.stats-label {
-    color: #8899bb; font-size: 0.78rem; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.7px; margin-top: 0.2rem;
-}
-
-/* ── Quick actions bar ── */
-.quick-actions {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(79,142,247,0.15);
-    border-radius: 16px;
+/* Enterprise Dashboard Styling */
+.dashboard-header {
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
     padding: 1.25rem 1.5rem;
     margin-bottom: 1.5rem;
-    animation: fadeInLeft 0.5s ease-out 0.08s both;
-}
-.quick-actions h5 { color: #e2e8f8; font-weight: 700; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 0.9rem; }
-
-.quick-btn {
-    background: linear-gradient(135deg,#4f8ef7,#7c5af7);
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    padding: 0.5rem 1rem;
-    margin: 0.2rem;
-    font-size: 0.82rem;
-    font-weight: 600;
-    transition: all 0.25s ease;
-    box-shadow: 0 3px 10px rgba(79,142,247,0.25);
-}
-.quick-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 18px rgba(79,142,247,0.45);
-    color: #fff;
 }
 
-/* ── Tool cards (feature grid) ── */
-.tool-card {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(79,142,247,0.15);
-    border-radius: 16px;
-    padding: 1.5rem;
-    margin-bottom: 1rem;
-    backdrop-filter: blur(8px);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+.quick-toolbar {
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 0.85rem 1.25rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.quick-action-btn {
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 0.825rem;
+    font-weight: 500;
+    padding: 0.45rem 0.85rem;
+    border-radius: var(--radius-md);
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.quick-action-btn:hover {
+    background-color: var(--surface-hover);
+    border-color: var(--brand-primary);
+    color: var(--brand-primary);
+}
+
+.tool-card-grid {
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
     cursor: pointer;
-    animation: fadeInUp 0.55s ease-out both;
 }
-.tool-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-    border-color: rgba(79,142,247,0.4);
-}
-.tool-card h6 { color: #e2e8f8; font-weight: 700; }
-.tool-description { color: #8899bb; font-size: 0.85rem; margin-bottom: 1rem; }
-
-.tool-icon {
-    width: 52px; height: 52px;
-    border-radius: 14px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.3rem; color: #fff;
-    margin-bottom: 0.9rem;
-    transition: transform 0.3s ease;
-}
-.tool-card:hover .tool-icon { transform: scale(1.12) rotate(-3deg); }
-
-.tool-btn {
-    background: transparent;
-    border: 1px solid rgba(79,142,247,0.3);
-    color: #4f8ef7;
-    border-radius: 8px;
-    padding: 0.4rem 0.9rem;
-    font-size: 0.82rem;
-    font-weight: 600;
-    transition: all 0.25s;
-}
-.tool-btn:hover {
-    background: linear-gradient(135deg,#4f8ef7,#7c5af7);
-    border-color: transparent;
-    color: #fff;
-    transform: translateX(4px);
+.tool-card-grid:hover {
+    border-color: var(--brand-primary);
+    box-shadow: var(--shadow-md);
 }
 
-/* ── Table ── */
-.table { color: #e2e8f8; }
-.table th {
-    background: linear-gradient(135deg,#4f8ef7,#7c5af7);
-    color: #fff; font-weight: 600; border: none; padding: 0.9rem 1rem;
-}
-.table td { padding: 0.7rem 1rem; border-color: rgba(255,255,255,0.06); vertical-align: middle; }
-.table tbody tr { transition: background 0.2s; }
-.table tbody tr:hover { background: rgba(79,142,247,0.08); }
-
-/* ── Modal dark ── */
-.modal-content {
-    background: var(--modal-bg);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    color: var(--text);
-}
-.modal-header {
-    background: linear-gradient(135deg,#4f8ef7,#7c5af7);
-    color: #fff;
-    border-radius: 20px 20px 0 0;
-    border: none;
-}
-.modal-header .btn-close { filter: brightness(0) invert(1); }
-
-/* ── Badge ── */
-.badge { font-weight: 700; padding: 0.4rem 0.75rem; border-radius: 20px; }
-
-/* ── Responsive ── */
-@media (max-width: 768px) {
-    .welcome-header h1 { font-size: 1.4rem; }
-    .stats-value { font-size: 1.8rem; }
-    .dashboard-container { margin: -1.5rem -8px 0; }
-    .quick-btn { display: block; width: 100%; margin: 0.2rem 0; }
+.tool-icon-box {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-md);
+    background-color: rgba(37, 99, 235, 0.1);
+    color: var(--brand-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 0.85rem;
 }
 </style>
 
+<div class="dashboard-header d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div>
+        <h4 class="mb-1 font-weight-700">Welcome back, {{ current_user.username }}</h4>
+        <p class="text-secondary mb-0 small">Real-time utility consumption overview and energy analytics</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="{{ url_for('alerts') }}" class="btn btn-outline-secondary btn-sm position-relative">
+            <i class="bi bi-bell"></i> Alerts
+            <span class="badge bg-danger ms-1">3</span>
+        </a>
+        <a href="{{ url_for('settings') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-gear"></i> Settings
+        </a>
+    </div>
+</div>
 
+<!-- Quick Toolbar -->
+<div class="quick-toolbar">
+    <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small font-weight-600 uppercase">Quick Actions:</span>
+    </div>
+    <div class="d-flex align-items-center flex-wrap gap-2">
+        <button class="quick-action-btn" data-url="{{ url_for('capture') }}" onclick="window.location.href=this.dataset.url">
+            <i class="bi bi-camera-fill text-primary"></i> Scan Meter
+        </button>
+        <button class="quick-action-btn" onclick="showBillCalculator()">
+            <i class="bi bi-calculator-fill text-primary"></i> Calculate Bill
+        </button>
+        <button class="quick-action-btn" onclick="showUsageAlerts()">
+            <i class="bi bi-bell-fill text-primary"></i> Set Alerts
+        </button>
+        <button class="quick-action-btn" onclick="showBudgetPlanner()">
+            <i class="bi bi-wallet2 text-primary"></i> Budget Planner
+        </button>
+        <button class="quick-action-btn" onclick="exportData()">
+            <i class="bi bi-download text-primary"></i> Export CSV
+        </button>
+    </div>
+</div>
 
-<div class="dashboard-container">
-    <!-- Welcome Header -->
-    <div class="welcome-header">
-        <div class="container-fluid">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1 class="mb-2">Welcome back, {{ current_user.username }}! 🏠</h1>
-                    <p class="mb-0 opacity-90">Your smart utility management dashboard is ready with real-time insights</p>
-                </div>
-                <div class="col-md-4 text-md-end">
-                    <div class="d-flex justify-content-md-end gap-2">
-                        <button class="btn btn-light btn-sm">
-                            <i class="bi bi-bell"></i> Alerts
-                            <span class="badge bg-danger ms-1">3</span>
-                        </button>
-                        <button class="btn btn-light btn-sm">
-                            <i class="bi bi-gear"></i> Settings
-                        </button>
-                    </div>
-                </div>
+<!-- Top KPI Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="kpi-card">
+            <div class="kpi-label">Units This Month</div>
+            <div class="kpi-value">{{ current_month_avg or 0 }} <span class="fs-6 font-weight-500 text-muted">kWh</span></div>
+            <div class="kpi-subtext">
+                <span class="{% if usage_change < 0 %}text-success{% elif usage_change > 0 %}text-warning{% else %}text-secondary{% endif %} font-weight-600">
+                    <i class="bi bi-arrow-{% if usage_change < 0 %}down{% elif usage_change > 0 %}up{% else %}right{% endif %}"></i> 
+                    {% if usage_change != 0 %}{{ usage_change|round|int }}% {{ 'less' if usage_change < 0 else 'more' }}{% else %}0%{% endif %}
+                </span>
+                <span>vs last month</span>
             </div>
         </div>
     </div>
-
-    <div class="container-fluid">
-        <!-- Quick Actions -->
-        <div class="quick-actions">
-            <h5 class="mb-3">⚡ Quick Actions</h5>
-            <div class="d-flex flex-wrap">
-                <button class="quick-btn" data-url="{{ url_for('capture') }}" onclick="window.location.href=this.dataset.url">
-                    <i class="bi bi-camera-fill"></i> Scan Meter
-                </button>
-                <button class="quick-btn" onclick="showBillCalculator()">
-                    <i class="bi bi-calculator"></i> Calculate Bill
-                </button>
-                <button class="quick-btn" onclick="showUsageAlerts()">
-                    <i class="bi bi-bell-fill"></i> Set Alerts
-                </button>
-                <button class="quick-btn" onclick="exportData()">
-                    <i class="bi bi-download"></i> Export Data
-                </button>
-                <button class="quick-btn" onclick="showBudgetPlanner()">
-                    <i class="bi bi-piggy-bank"></i> Budget
-                </button>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="kpi-card">
+            <div class="kpi-label">Est. Current Bill</div>
+            <div class="kpi-value">₹{{ estimated_bill or 0 }}</div>
+            <div class="kpi-subtext">
+                <i class="bi bi-graph-up text-info me-1"></i> Based on active tariff slabs
             </div>
         </div>
-
-        <!-- Stats Overview -->
-        <div class="row mb-4">
-            <div class="col-lg-3 col-md-6">
-                <div class="stats-card text-center">
-                    <div class="stats-value">{{ current_month_avg or 0 }}</div>
-                    <div class="stats-label">Units This Month</div>
-                    <small class="{% if usage_change < 0 %}text-success{% elif usage_change > 0 %}text-warning{% else %}text-info{% endif %}">
-                        <i class="bi bi-arrow-{% if usage_change < 0 %}down{% elif usage_change > 0 %}up{% else %}right{% endif %}"></i> 
-                        {% if usage_change != 0 %}{{ usage_change|round|int }}% {{ 'less' if usage_change < 0 else 'more' }} than last month{% else %}No change{% endif %}
-                    </small>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="stats-card text-center">
-                    <div class="stats-value">₹{{ estimated_bill or 0 }}</div>
-                    <div class="stats-label">Est. Bill Amount</div>
-                    <small class="text-info"><i class="bi bi-graph-up"></i> Based on current usage</small>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="stats-card text-center">
-                    <div class="stats-value">{{ current_month_count }}</div>
-                    <div class="stats-label">Readings This Month</div>
-                    <small class="text-success"><i class="bi bi-check-circle"></i> Regular tracking</small>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="stats-card text-center">
-                    <div class="stats-value">{{ efficiency_score }}</div>
-                    <div class="stats-label">Efficiency Score</div>
-                    <small class="text-success"><i class="bi bi-award"></i> {% if efficiency_score == 'A+' %}Excellent{% elif efficiency_score == 'B' %}Good{% else %}Needs Improvement{% endif %}</small>
-                </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="kpi-card">
+            <div class="kpi-label">Scans Completed</div>
+            <div class="kpi-value">{{ current_month_count }}</div>
+            <div class="kpi-subtext">
+                <i class="bi bi-check-circle-fill text-success me-1"></i> Recorded this billing cycle
             </div>
         </div>
-
-        <!-- Tools Section -->
-        <div class="row mb-4">
-            <div class="col-lg-3 col-md-6">
-                <div class="tool-card text-center" onclick="showAnalytics()">
-                    <div class="tool-icon">
-                        <i class="bi bi-graph-up"></i>
-                    </div>
-                    <h6>Usage Analytics</h6>
-                    <p class="tool-description">View detailed consumption patterns and trends</p>
-                    <button class="tool-btn">
-                        <i class="bi bi-bar-chart"></i> Analytics
-                    </button>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="tool-card text-center" onclick="showBillCalculator()">
-                    <div class="tool-icon">
-                        <i class="bi bi-calculator"></i>
-                    </div>
-                    <h6>Bill Calculator</h6>
-                    <p class="tool-description">Estimate your electricity bill instantly</p>
-                    <button class="tool-btn">
-                        <i class="bi bi-cash"></i> Calculate
-                    </button>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="tool-card text-center" onclick="showMultiMeter()">
-                    <div class="tool-icon">
-                        <i class="bi bi-speedometer2"></i>
-                    </div>
-                    <h6>Multi-Meter</h6>
-                    <p class="tool-description">Manage multiple meter connections</p>
-                    <button class="tool-btn">
-                        <i class="bi bi-plus-circle"></i> Add Meter
-                    </button>
-                </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="kpi-card">
+            <div class="kpi-label">Efficiency Score</div>
+            <div class="kpi-value">{{ efficiency_score }}</div>
+            <div class="kpi-subtext">
+                <span class="badge badge-success">
+                    {% if efficiency_score == 'A+' %}Optimal Efficiency{% elif efficiency_score == 'B' %}Moderate Efficiency{% else %}Needs Attention{% endif %}
+                </span>
             </div>
         </div>
+    </div>
+</div>
 
-        <!-- Reading History -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="stats-card">
-                    <h5 class="mb-3">📊 Recent Reading History</h5>
-                    {% if recent_readings %}
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Image</th>
-                                        <th>Reading Value</th>
-                                        <th>Confidence</th>
-                                        <th>Status</th>
-                                        <th>Notes</th>
-                                        <th>Date & Time</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for reading in recent_readings %}
-                                    <tr>
-                                        <td>
-                                            {% if reading.image_path %}
-                                                <img src="{{ url_for('static', filename='uploads/' + reading.image_path) }}" 
-                                                     class="rounded img-thumbnail dashboard-thumbnail" 
-                                                     style="width: 45px; height: 45px; object-fit: cover; cursor: zoom-in;"
-                                                     data-image="{{ reading.image_path }}"
-                                                     alt="Meter Thumbnail">
-                                            {% else %}
-                                                <span class="text-muted">N/A</span>
-                                            {% endif %}
-                                        </td>
-                                        <td><strong>{{ reading.reading_value }}</strong></td>
-                                        <td>
-                                            {% if reading.confidence %}
-                                                {% set conf = reading.confidence %}
-                                                {% set conf_percent = (conf * 100)|round|int %}
-                                                {% set bar_class = 'bg-success' if conf > 0.8 else ('bg-warning' if conf > 0.6 else 'bg-danger') %}
-                                                <div class="progress" style="height: 20px;">
-                                                    <div class="progress-bar {{ bar_class }}" 
-                                                         data-width="{{ conf_percent }}%">
-                                                        {{ conf_percent }}%
-                                                    </div>
-                                                </div>
-                                            {% else %}
-                                                <span class="text-muted">N/A</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <span class="badge {% if reading.status == 'auto' %}bg-primary{% elif reading.status == 'manual' %}bg-success{% else %}bg-secondary{% endif %}">
-                                                {{ reading.status|title }}
-                                            </span>
-                                        </td>
-                                        <td>{{ reading.notes or '-' }}</td>
-                                        <td>{{ reading.timestamp }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="text-end mt-3">
-                            <a href="{{ url_for('readings') }}" class="btn btn-outline-primary btn-sm">View All Readings →</a>
-                        </div>
-                    {% else %}
-                        <div class="text-center py-4">
-                            <i class="bi bi-graph-up display-4 text-muted"></i>
-                            <p class="text-muted mt-2">No readings yet. Start by scanning your first meter!</p>
-                            <a href="{{ url_for('capture') }}" class="btn btn-primary">Scan Meter Now</a>
-                        </div>
-                    {% endif %}
-                </div>
+<!-- Recent Reading History Table -->
+<div class="card mb-4">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-clock-history text-primary fs-5"></i>
+            <span>Recent Reading History</span>
+        </div>
+        {% if recent_readings %}
+            <a href="{{ url_for('readings') }}" class="btn btn-outline-secondary btn-sm">View All History →</a>
+        {% endif %}
+    </div>
+    <div class="card-body p-0">
+        {% if recent_readings %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Preview</th>
+                            <th>Reading Value</th>
+                            <th>Confidence</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reading in recent_readings %}
+                        <tr>
+                            <td>
+                                {% if reading.image_path %}
+                                    <img src="{{ url_for('static', filename='uploads/' + reading.image_path) }}" 
+                                         class="rounded img-thumbnail dashboard-thumbnail" 
+                                         style="width: 42px; height: 42px; object-fit: cover; cursor: zoom-in;"
+                                         data-image="{{ reading.image_path }}"
+                                         alt="Meter Thumbnail">
+                                {% else %}
+                                    <span class="text-muted small">No Image</span>
+                                {% endif %}
+                            </td>
+                            <td><span class="font-weight-700 text-primary">{{ reading.reading_value }}</span> <small class="text-muted">kWh</small></td>
+                            <td style="min-width: 140px;">
+                                {% if reading.confidence %}
+                                    {% set conf = reading.confidence %}
+                                    {% set conf_percent = (conf * 100)|round|int %}
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="progress flex-grow-1" style="height: 6px; background-color: var(--border-color);">
+                                            <div class="progress-bar {% if conf > 0.8 %}bg-success{% elif conf > 0.6 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                 data-width="{{ conf_percent }}%"></div>
+                                        </div>
+                                        <small class="font-weight-600 text-muted" style="font-size: 0.75rem;">{{ conf_percent }}%</small>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted small">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge {% if reading.status == 'auto' or reading.status == 'detected' %}badge-success{% elif reading.status == 'manual' %}badge-info{% else %}badge-neutral{% endif %}">
+                                    {{ (reading.status or 'Recorded')|title }}
+                                </span>
+                            </td>
+                            <td><span class="text-secondary small">{{ reading.notes or '-' }}</span></td>
+                            <td><span class="text-muted small">{{ reading.timestamp }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox text-muted fs-1 mb-2"></i>
+                <p class="text-secondary mb-3">No meter readings recorded yet.</p>
+                <a href="{{ url_for('capture') }}" class="btn btn-primary btn-sm">Scan First Meter</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Tools & Feature Grid -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-6 col-xl-4">
+        <div class="tool-card-grid" onclick="showAnalytics()">
+            <div>
+                <div class="tool-icon-box"><i class="bi bi-graph-up"></i></div>
+                <h6 class="font-weight-600 mb-1">Usage Analytics</h6>
+                <p class="text-secondary small mb-3">View real-time consumption patterns, 6-month visual trends, and peak usage insights.</p>
+            </div>
+            <div class="d-flex align-items-center text-primary font-weight-600 small">
+                <span>View Analytics</span> <i class="bi bi-chevron-right ms-1"></i>
             </div>
         </div>
-
-        <!-- Tools Grid -->
-        <div class="row">
-            <!-- Usage Analytics -->
-            <div class="col-lg-4 col-md-6">
-                <div class="tool-card">
-                    <div class="tool-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">
-                        <i class="bi bi-graph-up-arrow"></i>
-                    </div>
-                    <div class="tool-title">📊 Usage Analytics</div>
-                    <div class="tool-description">Real-time consumption charts, trends, and detailed insights into your utility usage patterns.</div>
-                    <button class="tool-btn" onclick="showAnalytics()">
-                        View Analytics <i class="bi bi-arrow-right"></i>
-                    </button>
-                </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <div class="tool-card-grid" onclick="showBillCalculator()">
+            <div>
+                <div class="tool-icon-box"><i class="bi bi-calculator"></i></div>
+                <h6 class="font-weight-600 mb-1">Bill Calculator</h6>
+                <p class="text-secondary small mb-3">Estimate electricity bills with Indian tariff slab rates, GST, and fuel surcharge.</p>
             </div>
-
-            <!-- Bill Calculator -->
-            <div class="col-lg-4 col-md-6">
-                <div class="tool-card">
-                    <div class="tool-icon" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
-                        <i class="bi bi-calculator-fill"></i>
-                    </div>
-                    <div class="tool-title">💰 Bill Calculator</div>
-                    <div class="tool-description">Calculate estimated bills, compare tariffs, and project monthly/yearly costs with tax breakdown.</div>
-                    <button class="tool-btn" onclick="showBillCalculator()">
-                        Calculate Now <i class="bi bi-arrow-right"></i>
-                    </button>
-                </div>
+            <div class="d-flex align-items-center text-primary font-weight-600 small">
+                <span>Calculate Bill</span> <i class="bi bi-chevron-right ms-1"></i>
             </div>
-
-            <!-- Consumption Alerts -->
-            <div class="col-lg-4 col-md-6">
-                <div class="tool-card">
-                    <div class="tool-icon" style="background: linear-gradient(135deg, #fa709a, #fee140);">
-                        <i class="bi bi-bell-fill"></i>
-                    </div>
-                    <div class="tool-title">🔔 Smart Alerts</div>
-                    <div class="tool-description">Set usage thresholds, get unusual consumption alerts, and receive bill due date reminders.</div>
-                    <button class="tool-btn" onclick="showUsageAlerts()">
-                        Configure Alerts <i class="bi bi-arrow-right"></i>
-                    </button>
-                    <span class="notification-badge">3</span>
-                </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <div class="tool-card-grid" onclick="showUsageAlerts()">
+            <div>
+                <div class="tool-icon-box"><i class="bi bi-bell"></i></div>
+                <h6 class="font-weight-600 mb-1">Smart Alerts</h6>
+                <p class="text-secondary small mb-3">Configure high-usage warnings, budget threshold alerts, and scan reminders.</p>
             </div>
-
-            <!-- Multi-Meter Management -->
-            <div class="col-lg-4 col-md-6">
-                <div class="tool-card">
-                    <div class="tool-icon" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
-                        <i class="bi bi-speedometer2"></i>
-                    </div>
-                    <div class="tool-title">🏠 Multi-Meter</div>
-                    <div class="tool-description">Manage electricity, water, and gas meters. Track all utilities in one place with combined analysis.</div>
-                    <button class="tool-btn" onclick="showMultiMeter()">
-                        Manage Meters <i class="bi bi-arrow-right"></i>
-                    </button>
-                </div>
+            <div class="d-flex align-items-center text-primary font-weight-600 small">
+                <span>Manage Alerts</span> <i class="bi bi-chevron-right ms-1"></i>
             </div>
-
-            <!-- Budget Planning -->
-            <div class="col-lg-4 col-md-6">
-                <div class="tool-card">
-                    <div class="tool-icon" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
-                        <i class="bi bi-piggy-bank-fill"></i>
-                    </div>
-                    <div class="tool-title">📈 Budget Planner</div>
-                    <div class="tool-description">Set monthly utility budgets, track spending vs budget, and get savings recommendations.</div>
-                    <button class="tool-btn" onclick="showBudgetPlanner()">
-                        Plan Budget <i class="bi bi-arrow-right"></i>
-                    </button>
-                </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <div class="tool-card-grid" onclick="showBudgetPlanner()">
+            <div>
+                <div class="tool-icon-box"><i class="bi bi-wallet2"></i></div>
+                <h6 class="font-weight-600 mb-1">Budget Planner</h6>
+                <p class="text-secondary small mb-3">Set monthly spending limits and monitor current consumption against budget targets.</p>
             </div>
-
-            <!-- Comparative Analysis -->
-            <div class="col-lg-4 col-md-6">
-                <div class="tool-card">
-                    <div class="tool-icon" style="background: linear-gradient(135deg, #ffecd2, #fcb69f);">
-                        <i class="bi bi-bar-chart-fill"></i>
-                    </div>
-                    <div class="tool-title">📊 Comparative Analysis</div>
-                    <div class="tool-description">Compare usage with similar households, regional benchmarks, and get efficiency scoring.</div>
-                    <button class="tool-btn" onclick="showComparativeAnalysis()">
-                        Compare Now <i class="bi bi-arrow-right"></i>
-                    </button>
-                </div>
+            <div class="d-flex align-items-center text-primary font-weight-600 small">
+                <span>Plan Budget</span> <i class="bi bi-chevron-right ms-1"></i>
             </div>
-
-            <!-- Maintenance Scheduler -->
-            <div class="col-lg-4 col-md-6">
-                <div class="tool-card">
-                    <div class="tool-icon" style="background: linear-gradient(135deg, #a8edea, #fed6e3);">
-                        <i class="bi bi-calendar-check"></i>
-                    </div>
-                    <div class="tool-title">🔧 Maintenance</div>
-                    <div class="tool-description">Schedule meter maintenance, track service history, and book technician appointments.</div>
-                    <button class="tool-btn" onclick="showMaintenance()">
-                        Schedule Now <i class="bi bi-arrow-right"></i>
-                    </button>
-                </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <div class="tool-card-grid" onclick="showMultiMeter()">
+            <div>
+                <div class="tool-icon-box"><i class="bi bi-speedometer2"></i></div>
+                <h6 class="font-weight-600 mb-1">Multi-Meter Management</h6>
+                <p class="text-secondary small mb-3">Track electricity, water, and gas meters across multiple properties in one dashboard.</p>
             </div>
-
-            <!-- Energy Efficiency Tips -->
-            <div class="col-lg-4 col-md-6">
-                <div class="tool-card">
-                    <div class="tool-icon" style="background: linear-gradient(135deg, #ff9a9e, #fecfef);">
-                        <i class="bi bi-lightbulb-fill"></i>
-                    </div>
-                    <div class="tool-title">💡 Energy Tips</div>
-                    <div class="tool-description">Get personalized recommendations, appliance analysis, and carbon footprint insights.</div>
-                    <button class="tool-btn" onclick="showEnergyTips()">
-                        Get Tips <i class="bi bi-arrow-right"></i>
-                    </button>
-                </div>
+            <div class="d-flex align-items-center text-primary font-weight-600 small">
+                <span>Manage Meters</span> <i class="bi bi-chevron-right ms-1"></i>
             </div>
-
-            <!-- Smart Home Integration -->
-            <div class="col-lg-4 col-md-6">
-                <div class="tool-card">
-                    <div class="tool-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">
-                        <i class="bi bi-house-heart-fill"></i>
-                    </div>
-                    <div class="tool-title">🏡 Smart Home</div>
-                    <div class="tool-description">Connect IoT devices, automate readings, integrate with smart thermostats and real-time monitoring.</div>
-                    <button class="tool-btn" onclick="showSmartHome()">
-                        Connect Devices <i class="bi bi-arrow-right"></i>
-                    </button>
-                </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <div class="tool-card-grid" onclick="showMaintenance()">
+            <div>
+                <div class="tool-icon-box"><i class="bi bi-calendar-check"></i></div>
+                <h6 class="font-weight-600 mb-1">Maintenance & Support</h6>
+                <p class="text-secondary small mb-3">Schedule meter inspections, log completed services, and file support tickets.</p>
             </div>
-
-            <!-- Export & Reports -->
-            <div class="col-lg-4 col-md-6">
-                <div class="tool-card">
-                    <div class="tool-icon" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
-                        <i class="bi bi-file-earmark-text-fill"></i>
-                    </div>
-                    <div class="tool-title">📄 Export Reports</div>
-                    <div class="tool-description">Export data to CSV/PDF, generate usage reports, print records, and backup reading history.</div>
-                    <button class="tool-btn" onclick="exportData()">
-                        Export Data <i class="bi bi-arrow-right"></i>
-                    </button>
-                </div>
+            <div class="d-flex align-items-center text-primary font-weight-600 small">
+                <span>Schedule Maintenance</span> <i class="bi bi-chevron-right ms-1"></i>
             </div>
         </div>
     </div>
@@ -537,24 +327,37 @@
 }
 </script>
 
-<!-- Modals for Tools -->
+<!-- Analytics Modal -->
 <div class="modal fade" id="analyticsModal" tabindex="-1">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">📊 Usage Analytics Dashboard</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content" style="background-color: var(--modal-bg); border: 1px solid var(--border-color);">
+            <div class="modal-header border-bottom" style="border-color: var(--border-color) !important;">
+                <h5 class="modal-title font-weight-600"><i class="bi bi-graph-up text-primary me-2"></i>Usage Analytics Dashboard</h5>
+                <button type="button" class="btn-close text-secondary shadow-none" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <canvas id="usageChart" width="400" height="200"></canvas>
-                <div class="row mt-4">
+            <div class="modal-body p-4">
+                <div class="card mb-4">
+                    <div class="card-header font-weight-600 small uppercase text-muted">6-Month Usage Trend (kWh)</div>
+                    <div class="card-body">
+                        <canvas id="usageChart" height="120"></canvas>
+                    </div>
+                </div>
+                <div class="row g-3">
                     <div class="col-md-6">
-                        <h6>Daily Usage Pattern</h6>
-                        <canvas id="dailyChart" width="400" height="200"></canvas>
+                        <div class="card h-100">
+                            <div class="card-header font-weight-600 small uppercase text-muted">Weekly Usage Pattern</div>
+                            <div class="card-body">
+                                <canvas id="dailyChart" height="160"></canvas>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-md-6">
-                        <h6>Monthly Comparison</h6>
-                        <canvas id="monthlyChart" width="400" height="200"></canvas>
+                        <div class="card h-100">
+                            <div class="card-header font-weight-600 small uppercase text-muted">Monthly Consumption Comparison</div>
+                            <div class="card-body">
+                                <canvas id="monthlyChart" height="160"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -562,18 +365,19 @@
     </div>
 </div>
 
+<!-- Bill Calculator Modal -->
 <div class="modal fade" id="billCalculatorModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">💰 Bill Calculator & Estimator</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="background-color: var(--modal-bg); border: 1px solid var(--border-color);">
+            <div class="modal-header border-bottom" style="border-color: var(--border-color) !important;">
+                <h5 class="modal-title font-weight-600"><i class="bi bi-calculator text-primary me-2"></i>Bill Calculator & Estimator</h5>
+                <button type="button" class="btn-close text-secondary shadow-none" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4">
                 <form id="billCalculatorForm">
-                    <div class="row">
+                    <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Units Consumed</label>
+                            <label class="form-label">Units Consumed (kWh)</label>
                             <input type="number" class="form-control" id="unitsInput" value="245">
                         </div>
                         <div class="col-md-6">
@@ -584,8 +388,6 @@
                                 <option value="industrial">Industrial</option>
                             </select>
                         </div>
-                    </div>
-                    <div class="row mt-3">
                         <div class="col-md-6">
                             <label class="form-label">Season</label>
                             <select class="form-select" id="season">
@@ -603,7 +405,7 @@
                             </select>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-primary mt-3" onclick="calculateBill()">Calculate Bill</button>
+                    <button type="button" class="btn btn-primary mt-4" onclick="calculateBill()"><i class="bi bi-calculator"></i> Calculate Bill</button>
                 </form>
                 <div id="billResult" class="mt-4"></div>
             </div>
@@ -616,7 +418,7 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content bg-transparent border-0">
             <div class="modal-header border-0 pb-0">
-                <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white ms-auto shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-0 text-center">
                 <img id="previewImage" src="" class="img-fluid shadow-lg rounded" style="max-height: 85vh;" alt="Meter Reading">
@@ -627,7 +429,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// Apply progress bar widths from data-attributes (prevents CSS lint errors)
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.progress-bar').forEach(function(bar) {
         if (bar.dataset.width) {
@@ -635,7 +436,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Handle full-size image preview for dashboard thumbnails
     const showPreview = (filename) => {
         const previewImg = document.getElementById('previewImage');
         previewImg.src = '{{ url_for("static", filename="uploads/") }}' + filename;
@@ -651,7 +451,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Get Flask data from data attributes
 function getDashboardData() {
     const dataElement = document.getElementById('dashboard-data');
     if (dataElement) {
@@ -673,10 +472,7 @@ function showAnalytics() {
     const modal = new bootstrap.Modal(document.getElementById('analyticsModal'));
     modal.show();
     
-    // Initialize main usage chart with real data
     const ctx = document.getElementById('usageChart').getContext('2d');
-    
-    // Prepare chart data
     const labels = dashboardData.monthlyData.map(d => {
         const date = new Date(d.month + '-01');
         return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
@@ -690,31 +486,24 @@ function showAnalytics() {
             datasets: [{
                 label: 'Average Monthly Usage (kWh)',
                 data: data,
-                borderColor: 'rgb(102, 126, 234)',
-                backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                tension: 0.4,
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                borderWidth: 2,
+                tension: 0.3,
                 fill: true
             }]
         },
         options: {
             responsive: true,
             plugins: {
-                legend: { position: 'top' },
-                title: { display: true, text: '6-Month Usage Trend' }
+                legend: { display: false }
             },
             scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Usage (kWh)'
-                    }
-                }
+                y: { beginAtZero: true }
             }
         }
     });
     
-    // Initialize daily pattern chart (sample data for now)
     const dailyCtx = document.getElementById('dailyChart').getContext('2d');
     new Chart(dailyCtx, {
         type: 'bar',
@@ -723,18 +512,16 @@ function showAnalytics() {
             datasets: [{
                 label: 'Daily Average Usage',
                 data: [12, 19, 15, 17, 14, 8, 10],
-                backgroundColor: 'rgba(102, 126, 234, 0.8)'
+                backgroundColor: 'rgba(37, 99, 235, 0.85)',
+                borderRadius: 4
             }]
         },
         options: {
             responsive: true,
-            plugins: {
-                title: { display: true, text: 'Weekly Usage Pattern' }
-            }
+            plugins: { legend: { display: false } }
         }
     });
     
-    // Initialize monthly comparison chart
     const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
     new Chart(monthlyCtx, {
         type: 'doughnut',
@@ -746,27 +533,16 @@ function showAnalytics() {
                     dashboardData.currentMonthAvg * (1 - dashboardData.usageChange/100),
                     dashboardData.currentMonthAvg * 0.9
                 ],
-                backgroundColor: [
-                    'rgba(102, 126, 234, 0.8)',
-                    'rgba(240, 147, 251, 0.8)',
-                    'rgba(67, 233, 123, 0.8)'
-                ]
+                backgroundColor: ['#2563eb', '#06b6d4', '#10b981']
             }]
         },
-        options: {
-            responsive: true,
-            plugins: {
-                title: { display: true, text: 'Monthly Comparison' }
-            }
-        }
+        options: { responsive: true }
     });
 }
 
 function showBillCalculator() {
     const modal = new bootstrap.Modal(document.getElementById('billCalculatorModal'));
     modal.show();
-    
-    // Set current usage as default
     const unitsInput = document.getElementById('unitsInput');
     if (unitsInput && dashboardData.currentMonthAvg > 0) {
         unitsInput.value = Math.round(dashboardData.currentMonthAvg);
@@ -779,7 +555,6 @@ function calculateBill() {
     const season = document.getElementById('season').value;
     const timeOfDay = document.getElementById('timeOfDay').value;
     
-    // Use the API endpoint for accurate calculation
     fetch('/api/bill_calculator', {
         method: 'POST',
         headers: {
@@ -798,44 +573,38 @@ function calculateBill() {
         if (data.success) {
             const breakdown = data.bill_breakdown;
             document.getElementById('billResult').innerHTML = `
-                <div class="alert alert-success">
-                    <h6>💰 Bill Breakdown:</h6>
-                    <div class="row">
+                <div class="card border-0 p-3" style="background-color: var(--surface-hover);">
+                    <h6 class="font-weight-700 text-primary mb-3">💰 Itemized Bill Breakdown:</h6>
+                    <div class="row g-2 small">
                         <div class="col-md-6">
-                            <p>Energy Charges: ₹${breakdown.energy_charges}</p>
-                            <p>Fixed Charges: ₹${breakdown.fixed_charge}</p>
-                            <p>Fuel Surcharge (15%): ₹${breakdown.fuel_surcharge}</p>
+                            <p class="mb-1">Energy Charges: ₹${breakdown.energy_charges}</p>
+                            <p class="mb-1">Fixed Charges: ₹${breakdown.fixed_charge}</p>
+                            <p class="mb-1">Fuel Surcharge (15%): ₹${breakdown.fuel_surcharge}</p>
                         </div>
                         <div class="col-md-6">
-                            <p>GST (18%): ₹${breakdown.gst_amount}</p>
-                            <p>Electricity Duty (16%): ₹${breakdown.electricity_duty}</p>
-                            <p>Meter Rent: ₹${breakdown.meter_rent}</p>
+                            <p class="mb-1">GST (18%): ₹${breakdown.gst_amount}</p>
+                            <p class="mb-1">Electricity Duty (16%): ₹${breakdown.electricity_duty}</p>
+                            <p class="mb-1">Meter Rent: ₹${breakdown.meter_rent}</p>
                         </div>
                     </div>
-                    <hr>
-                    <h5>Total Bill Amount: <strong>₹${breakdown.total_amount}</strong></h5>
-                    <div class="mt-3">
-                        <small class="text-muted">Calculated for ${units} units (${connection_type}, ${season}, ${timeOfDay})</small>
-                    </div>
+                    <hr class="my-2 border-secondary">
+                    <h5 class="mb-0 font-weight-700">Total Bill Amount: <span class="text-primary">₹${breakdown.total_amount}</span></h5>
                 </div>
             `;
         } else {
             document.getElementById('billResult').innerHTML = `
-                <div class="alert alert-danger">
+                <div class="alert alert-danger py-2 border-0">
                     <strong>Error:</strong> ${data.error}
                 </div>
             `;
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        // Fallback to client-side calculation
         calculateBillClientSide(units, connectionType, season, timeOfDay);
     });
 }
 
 function calculateBillClientSide(units, connectionType, season, timeOfDay) {
-    // Simple calculation logic as fallback
     let baseRate = 4.50;
     if (connectionType === 'commercial') baseRate = 6.50;
     if (connectionType === 'industrial') baseRate = 8.50;
@@ -858,56 +627,33 @@ function calculateBillClientSide(units, connectionType, season, timeOfDay) {
     const totalBill = energyCharges + fixedCharges + fuelSurcharge + gst + electricityDuty + meterRent;
     
     document.getElementById('billResult').innerHTML = `
-        <div class="alert alert-info">
-            <h6>Bill Breakdown:</h6>
-            <div class="row">
+        <div class="card border-0 p-3" style="background-color: var(--surface-hover);">
+            <h6 class="font-weight-700 text-primary mb-3">Estimated Bill Breakdown:</h6>
+            <div class="row g-2 small">
                 <div class="col-md-6">
-                    <p>Energy Charges: ₹${energyCharges.toFixed(2)}</p>
-                    <p>Fixed Charges: ₹${fixedCharges.toFixed(2)}</p>
-                    <p>Fuel Surcharge (15%): ₹${fuelSurcharge.toFixed(2)}</p>
+                    <p class="mb-1">Energy Charges: ₹${energyCharges.toFixed(2)}</p>
+                    <p class="mb-1">Fixed Charges: ₹${fixedCharges.toFixed(2)}</p>
+                    <p class="mb-1">Fuel Surcharge (15%): ₹${fuelSurcharge.toFixed(2)}</p>
                 </div>
                 <div class="col-md-6">
-                    <p>GST (18%): ₹${gst.toFixed(2)}</p>
-                    <p>Electricity Duty (16%): ₹${electricityDuty.toFixed(2)}</p>
-                    <p>Meter Rent: ₹${meterRent.toFixed(2)}</p>
+                    <p class="mb-1">GST (18%): ₹${gst.toFixed(2)}</p>
+                    <p class="mb-1">Electricity Duty (16%): ₹${electricityDuty.toFixed(2)}</p>
+                    <p class="mb-1">Meter Rent: ₹${meterRent.toFixed(2)}</p>
                 </div>
             </div>
-            <hr>
-            <h5>Total Bill Amount: <strong>₹${totalBill.toFixed(2)}</strong></h5>
+            <hr class="my-2 border-secondary">
+            <h5 class="mb-0 font-weight-700">Total Bill Amount: <span class="text-primary">₹${totalBill.toFixed(2)}</span></h5>
         </div>
     `;
 }
 
-function showUsageAlerts() {
-    window.location.href = '/alerts';
-}
-
-function exportData() {
-    window.location.href = '/export_data?format=csv';
-}
-
-function showBudgetPlanner() {
-    window.location.href = '/budget_planner';
-}
-
-function showMultiMeter() {
-    window.location.href = '/multi_meter';
-}
-
-function showComparativeAnalysis() {
-    window.location.href = '/comparative_analysis';
-}
-
-function showMaintenance() {
-    window.location.href = '/maintenance';
-}
-
-function showEnergyTips() {
-    window.location.href = '/energy_tips';
-}
-
-function showSmartHome() {
-    window.location.href = '/smart_home';
-}
+function showUsageAlerts() { window.location.href = '/alerts'; }
+function exportData() { window.location.href = '/export_data?format=csv'; }
+function showBudgetPlanner() { window.location.href = '/budget_planner'; }
+function showMultiMeter() { window.location.href = '/multi_meter'; }
+function showComparativeAnalysis() { window.location.href = '/comparative_analysis'; }
+function showMaintenance() { window.location.href = '/maintenance'; }
+function showEnergyTips() { window.location.href = '/energy_tips'; }
+function showSmartHome() { window.location.href = '/smart_home'; }
 </script>
 {% endblock %}

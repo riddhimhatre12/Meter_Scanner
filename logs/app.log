@@ -656,3 +656,47 @@ AttributeError: 'NoneType' object has no attribute 'read'
 2026-08-17 12:55:57,391 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
 2026-08-17 13:15:16,068 INFO meter_scanner: Application started. Database initialized.
 2026-08-17 13:15:16,070 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-17 13:54:00,382 INFO meter_scanner: Application started. Database initialized.
+2026-08-17 13:54:00,386 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-17 14:12:29,625 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-08-17 14:12:29,740 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-08-17 14:12:29,859 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-08-17 14:12:29,962 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-08-17 14:12:30,062 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-08-17 14:12:30,164 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-08-17 14:37:14,971 INFO meter_scanner: Application started. Database initialized.
+2026-08-17 14:37:14,972 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-17 14:39:40,645 INFO meter_scanner: Application started. Database initialized.
+2026-08-17 14:39:40,647 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-17 14:40:04,175 INFO meter_scanner: Application started. Database initialized.
+2026-08-17 14:40:04,176 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-17 14:40:05,627 ERROR meter_scanner: Error in extract_meter_number: OpenCV(4.13.0) :-1: error: (-5:Bad argument) in function 'cvtColor'
+> Overload resolution failed:
+>  - src is not a numpy array, neither a scalar
+>  - Expected Ptr<cv::UMat> for argument 'src'
+
+2026-08-17 14:40:50,525 INFO meter_scanner: Application started. Database initialized.
+2026-08-17 14:40:50,526 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-17 14:40:51,939 ERROR meter_scanner: Error in extract_meter_number: OpenCV(4.13.0) :-1: error: (-5:Bad argument) in function 'cvtColor'
+> Overload resolution failed:
+>  - src is not a numpy array, neither a scalar
+>  - Expected Ptr<cv::UMat> for argument 'src'
+
+2026-08-17 14:41:36,558 INFO meter_scanner: Application started. Database initialized.
+2026-08-17 14:41:36,559 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-17 14:41:37,996 ERROR meter_scanner: Error in extract_meter_number: OpenCV(4.13.0) :-1: error: (-5:Bad argument) in function 'cvtColor'
+> Overload resolution failed:
+>  - src is not a numpy array, neither a scalar
+>  - Expected Ptr<cv::UMat> for argument 'src'
+
+2026-08-17 15:14:32,475 INFO meter_scanner: Application started. Database initialized.
+2026-08-17 15:14:32,476 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-17 15:14:33,113 INFO meter_scanner: Application started. Database initialized.
+2026-08-17 15:14:33,115 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-17 17:47:32,454 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-08-17 17:47:32,561 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-08-17 17:47:32,662 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-08-17 17:47:32,763 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-08-17 17:47:32,864 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-08-17 17:47:32,964 WARNING meter_scanner: Failed to grab frame in gen_frames
+2026-08-17 17:47:33,066 WARNING meter_scanner: Failed to grab frame in gen_frames

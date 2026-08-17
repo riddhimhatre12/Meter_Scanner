@@ -1,218 +1,52 @@
 {% extends "base.html" %}
 
-{% block title %}Login{% endblock %}
+{% block title %}Sign In{% endblock %}
 
 {% block content %}
-<style>
-/* ── Login page styles ── */
-.auth-page {
-    min-height: calc(100vh - 68px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem 1rem;
-    background:
-        radial-gradient(ellipse at 20% 50%, rgba(79,142,247,0.12) 0%, transparent 60%),
-        radial-gradient(ellipse at 80% 20%, rgba(124,90,247,0.10) 0%, transparent 55%);
-}
+<div class="row justify-content-center align-items-center py-4" style="min-height: calc(100vh - 140px);">
+    <div class="col-12 col-sm-10 col-md-8 col-lg-5 col-xl-4">
+        <div class="card p-4">
+            <div class="text-center mb-4">
+                <div class="brand-badge mx-auto mb-2" style="width: 44px; height: 44px; font-size: 1.3rem;">
+                    <i class="bi bi-cpu-fill"></i>
+                </div>
+                <h4 class="font-weight-700 mb-1">Welcome Back</h4>
+                <p class="text-secondary small mb-0">Sign in to access your utility dashboard</p>
+            </div>
 
-.auth-card {
-    width: 100%;
-    max-width: 440px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(79,142,247,0.2);
-    border-radius: 24px;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
-    animation: scaleIn 0.45s ease-out both;
-    overflow: hidden;
-}
+            <form method="POST" class="mb-3">
+                <div class="mb-3">
+                    <label class="form-label" for="username">Username or Email</label>
+                    <input type="text" class="form-control" id="username" name="username"
+                           placeholder="name@example.com" required autocomplete="username">
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label class="form-label mb-0" for="password">Password</label>
+                    </div>
+                    <input type="password" class="form-control" id="password" name="password"
+                           placeholder="••••••••" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2 mt-2">
+                    <i class="bi bi-box-arrow-in-right"></i> Sign In
+                </button>
+            </form>
 
-.auth-card-header {
-    padding: 2rem 2rem 1rem;
-    text-align: center;
-    border-bottom: 1px solid rgba(79,142,247,0.15);
-}
+            <div class="d-flex align-items-center gap-2 my-3">
+                <hr class="flex-grow-1 my-0 border-secondary">
+                <span class="text-muted small font-weight-600 uppercase" style="font-size: 0.7rem;">Or continue with</span>
+                <hr class="flex-grow-1 my-0 border-secondary">
+            </div>
 
-.auth-logo {
-    width: 56px; height: 56px;
-    background: linear-gradient(135deg,#4f8ef7,#7c5af7);
-    border-radius: 16px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.6rem;
-    margin: 0 auto 1rem;
-    box-shadow: 0 8px 24px rgba(79,142,247,0.4);
-    animation: fadeInDown 0.5s ease-out both;
-}
+            <a href="{{ url_for('google_login') }}" class="btn btn-outline-secondary w-100 py-2">
+                <i class="bi bi-google text-danger me-2"></i> Continue with Google
+            </a>
 
-.auth-title {
-    font-size: 1.55rem;
-    font-weight: 800;
-    background: linear-gradient(135deg,#e2e8f8,#a8c5f7);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin: 0;
-    animation: fadeInUp 0.5s ease-out 0.1s both;
-}
-
-.auth-subtitle {
-    color: #8899bb;
-    font-size: 0.85rem;
-    margin-top: 0.35rem;
-    animation: fadeInUp 0.5s ease-out 0.15s both;
-}
-
-.auth-card-body { padding: 1.75rem 2rem; }
-
-.form-field {
-    margin-bottom: 1.1rem;
-    animation: fadeInUp 0.5s ease-out both;
-}
-.form-field:nth-child(1) { animation-delay: 0.2s; }
-.form-field:nth-child(2) { animation-delay: 0.28s; }
-
-.field-label {
-    display: block;
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: #8899bb;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    margin-bottom: 0.5rem;
-}
-
-.field-input {
-    width: 100%;
-    background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(79,142,247,0.2);
-    border-radius: 12px;
-    padding: 0.8rem 1rem;
-    color: #e2e8f8;
-    font-size: 0.9rem;
-    outline: none;
-    transition: all 0.25s;
-}
-.field-input::placeholder { color: #4a5a7a; }
-.field-input:focus {
-    background: rgba(79,142,247,0.08);
-    border-color: #4f8ef7;
-    box-shadow: 0 0 0 3px rgba(79,142,247,0.18);
-}
-
-.btn-submit {
-    width: 100%;
-    padding: 0.85rem;
-    background: linear-gradient(135deg,#4f8ef7,#7c5af7);
-    border: none;
-    border-radius: 12px;
-    color: #fff;
-    font-size: 0.95rem;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    cursor: pointer;
-    transition: all 0.25s;
-    box-shadow: 0 4px 18px rgba(79,142,247,0.35);
-    animation: fadeInUp 0.5s ease-out 0.35s both;
-}
-.btn-submit:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 28px rgba(79,142,247,0.55);
-}
-
-.divider {
-    display: flex;
-    align-items: center;
-    gap: 0.9rem;
-    margin: 1.3rem 0;
-    animation: fadeIn 0.5s ease-out 0.42s both;
-}
-.divider-line { flex: 1; height: 1px; background: rgba(79,142,247,0.2); }
-.divider-or   { color: #4a5a7a; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.5px; }
-
-.btn-google-dark {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.7rem;
-    padding: 0.8rem 1rem;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(79,142,247,0.25);
-    border-radius: 12px;
-    color: #e2e8f8;
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.25s;
-    animation: fadeInUp 0.5s ease-out 0.48s both;
-}
-.btn-google-dark:hover {
-    background: rgba(79,142,247,0.12);
-    border-color: #4f8ef7;
-    color: #fff;
-    transform: translateY(-1px);
-    text-decoration: none;
-}
-.google-icon {
-    font-size: 1.1rem;
-    background: linear-gradient(135deg,#4285F4,#EA4335,#FBBC05,#34A853);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.auth-footer {
-    padding: 1rem 2rem 1.5rem;
-    text-align: center;
-    color: #4a5a7a;
-    font-size: 0.83rem;
-    border-top: 1px solid rgba(79,142,247,0.12);
-    animation: fadeIn 0.5s ease-out 0.55s both;
-}
-.auth-footer a { color: #4f8ef7; font-weight: 600; text-decoration: none; }
-.auth-footer a:hover { color: #00cfff; }
-</style>
-
-<div class="auth-page">
-  <div class="auth-card">
-    <div class="auth-card-header">
-        <div class="auth-logo">⚡</div>
-        <h1 class="auth-title">Welcome Back</h1>
-        <p class="auth-subtitle">Sign in to Meter Scanner Pro</p>
-    </div>
-
-    <div class="auth-card-body">
-        <form method="POST">
-          <div class="form-field">
-            <label class="field-label" for="username">Username or Email</label>
-            <input type="text" class="field-input" id="username" name="username"
-                   placeholder="Enter your username or email" required autocomplete="username">
-          </div>
-          <div class="form-field">
-            <label class="field-label" for="password">Password</label>
-            <input type="password" class="field-input" id="password" name="password"
-                   placeholder="Enter your password" required autocomplete="current-password">
-          </div>
-          <button type="submit" class="btn-submit">⚡ Sign In</button>
-        </form>
-
-        <div class="divider">
-            <div class="divider-line"></div>
-            <span class="divider-or">OR</span>
-            <div class="divider-line"></div>
+            <div class="text-center mt-4 pt-2 border-top" style="border-color: var(--border-color) !important;">
+                <span class="text-secondary small">Don't have an account?</span>
+                <a href="{{ url_for('register') }}" class="text-primary font-weight-600 small ms-1">Create Account</a>
+            </div>
         </div>
-
-        <a href="{{ url_for('google_login') }}" class="btn-google-dark">
-            <i class="bi bi-google google-icon"></i>
-            Continue with Google
-        </a>
     </div>
-
-    <div class="auth-footer">
-        Don't have an account? <a href="{{ url_for('register') }}">Register here</a>
-    </div>
-  </div>
 </div>
 {% endblock %}

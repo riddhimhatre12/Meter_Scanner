@@ -1,132 +1,176 @@
 {% extends "base.html" %}
 
-{% block title %}Electricity Bill{% endblock %}
+{% block title %}Utility Invoice Statement{% endblock %}
 
 {% block content %}
-<div class="container my-4">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0 text-center">Electricity Bill</h3>
-                </div>
-                <div class="card-body">
-                    <div class="row mb-4">
-                        <div class="col-6">
-                            <h5>Bill Date: {{ bill.bill_date }}</h5>
-                        </div>
-                        <div class="col-6 text-end">
-                            <h5>Due Date: {{ bill.due_date }}</h5>
-                        </div>
-                    </div>
+<style>
+/* Utility Bill Statement Card */
+.invoice-card {
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+}
 
-                    <!-- Meter Reading Details -->
-                    <div class="card mb-4">
-                        <div class="card-header bg-light">
-                            <h5 class="mb-0">Meter Reading Details</h5>
-                        </div>
-                        <div class="card-body">
-                            <table class="table table-bordered">
-                                <tbody>
-                                    <tr>
-                                        <th>Current Reading</th>
-                                        <td class="text-end">{{ bill.current_reading }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Previous Reading</th>
-                                        <td class="text-end">{{ bill.previous_reading }}</td>
-                                    </tr>
-                                    <tr class="table-info">
-                                        <th>Units Consumed</th>
-                                        <td class="text-end">{{ bill.units_consumed }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+.invoice-header-banner {
+    background-color: var(--surface-hover);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.5rem 2rem;
+}
 
-                    <!-- Slab-wise Charges -->
-                    <div class="card mb-4">
-                        <div class="card-header bg-light">
-                            <h5 class="mb-0">Energy Charges Breakup</h5>
-                        </div>
-                        <div class="card-body">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Slab (Units)</th>
-                                        <th class="text-end">Units</th>
-                                        <th class="text-end">Rate (Rs)</th>
-                                        <th class="text-end">Amount (Rs)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for slab in bill.slab_breakup %}
-                                    <tr>
-                                        <td>{{ slab.start }}-{{ slab.end }}</td>
-                                        <td class="text-end">{{ slab.units }}</td>
-                                        <td class="text-end">{{ slab.rate }}</td>
-                                        <td class="text-end">{{ slab.charge }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                    <tr class="table-info">
-                                        <th colspan="3">Total Energy Charges</th>
-                                        <td class="text-end">{{ bill.energy_charges }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+.invoice-section-title {
+    font-size: 0.775rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+}
 
-                    <!-- Bill Summary -->
-                    <div class="card">
-                        <div class="card-header bg-light">
-                            <h5 class="mb-0">Bill Summary</h5>
-                        </div>
-                        <div class="card-body">
-                            <table class="table table-bordered">
-                                <tbody>
-                                    <tr>
-                                        <th>Energy Charges</th>
-                                        <td class="text-end">{{ bill.energy_charges }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Fixed Charges</th>
-                                        <td class="text-end">{{ bill.fixed_charge }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Fuel Surcharge ({{ bill.fuel_surcharge_rate }}%)</th>
-                                        <td class="text-end">{{ bill.fuel_surcharge }}</td>
-                                    </tr>
-                                    <tr class="table-info">
-                                        <th>Subtotal</th>
-                                        <td class="text-end">{{ bill.subtotal }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>GST @ {{ bill.gst_rate }}%</th>
-                                        <td class="text-end">{{ bill.gst_amount }}</td>
-                                    </tr>
-                                    <tr class="table-primary">
-                                        <th><h4 class="mb-0">Total Amount (Rs)</h4></th>
-                                        <td class="text-end"><h4 class="mb-0">{{ bill.total_amount }}</h4></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+.invoice-summary-box {
+    background-color: rgba(37, 99, 235, 0.08);
+    border: 1px solid rgba(37, 99, 235, 0.25);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+}
+</style>
 
-                    <div class="text-center mt-4">
-                        <button class="btn btn-primary me-2" onclick="window.print()">
-                            <i class="fas fa-print me-2"></i>Print Bill
-                        </button>
-                        <button class="btn btn-success me-2" onclick="downloadPDF()">
-                            <i class="fas fa-file-pdf me-2"></i>Download PDF
-                        </button>
-                        <a href="{{ url_for('readings') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left me-2"></i>Back to Readings
-                        </a>
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+        <div class="invoice-card" id="invoice-print-area">
+            
+            <!-- Invoice Header -->
+            <div class="invoice-header-banner">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge badge-info fs-6"><i class="bi bi-file-earmark-text-fill"></i></span>
+                            <h4 class="mb-0 font-weight-700">Electricity Utility Invoice</h4>
+                        </div>
+                        <small class="text-secondary">Statement Reference ID: #READING-{{ bill.reading_id or '001' }}</small>
+                    </div>
+                    <div class="text-md-end">
+                        <span class="badge badge-warning me-2">Payment Pending</span>
+                        <div class="small text-secondary mt-1">
+                            <span>Issue Date: <strong>{{ bill.bill_date }}</strong></span> · 
+                            <span>Due Date: <strong class="text-warning">{{ bill.due_date }}</strong></span>
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            <div class="p-4">
+                
+                <!-- Consumption & Meter Reading Summary -->
+                <div class="mb-4">
+                    <div class="invoice-section-title">1. Meter Reading Summary</div>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <div class="card p-3 text-center border">
+                                <span class="text-muted small uppercase font-weight-600">Previous Reading</span>
+                                <div class="fs-4 font-weight-700 mt-1">{{ bill.previous_reading }} <small class="fs-6 text-muted">kWh</small></div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="card p-3 text-center border">
+                                <span class="text-muted small uppercase font-weight-600">Current Reading</span>
+                                <div class="fs-4 font-weight-700 text-primary mt-1">{{ bill.current_reading }} <small class="fs-6 text-muted">kWh</small></div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="card p-3 text-center border" style="background-color: rgba(37, 99, 235, 0.06);">
+                                <span class="text-primary small uppercase font-weight-700">Units Consumed</span>
+                                <div class="fs-4 font-weight-800 text-primary mt-1">{{ bill.units_consumed }} <small class="fs-6 text-muted">kWh</small></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slab Breakdown Table -->
+                <div class="mb-4">
+                    <div class="invoice-section-title">2. Energy Charges Slab Breakdown</div>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Consumption Slab</th>
+                                    <th class="text-end">Units (kWh)</th>
+                                    <th class="text-end">Tariff Rate (₹/unit)</th>
+                                    <th class="text-end">Amount (₹)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for slab in bill.slab_breakup %}
+                                <tr>
+                                    <td class="font-weight-500">{{ slab.start }} – {{ slab.end }} units</td>
+                                    <td class="text-end">{{ slab.units }}</td>
+                                    <td class="text-end">₹{{ "%.2f"|format(slab.rate|float) }}</td>
+                                    <td class="text-end font-weight-600">₹{{ "%.2f"|format(slab.charge|float) }}</td>
+                                </tr>
+                                {% endfor %}
+                                <tr style="background-color: var(--surface-hover);">
+                                    <td colspan="3" class="font-weight-700 text-uppercase small">Subtotal Energy Charges</td>
+                                    <td class="text-end font-weight-700 text-primary">₹{{ "%.2f"|format(bill.energy_charges|float) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Final Statement & Total -->
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-6">
+                        <div class="card p-3 h-100 border">
+                            <div class="font-weight-600 small uppercase text-muted mb-2"><i class="bi bi-info-circle me-1"></i> Billing Policy Notes</div>
+                            <ul class="text-secondary small ps-3 mb-0" style="line-height: 1.6;">
+                                <li>Slab rates strictly adhere to regional utility board tariffs.</li>
+                                <li>Fuel Surcharge (15%) & Fixed Meter Rent (₹25) apply to all connections.</li>
+                                <li>GST at 18% is levied on total energy subtotal.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="invoice-summary-box">
+                            <div class="invoice-section-title text-primary">3. Financial Statement Summary</div>
+                            <div class="d-flex justify-content-between mb-2 small">
+                                <span class="text-secondary">Total Energy Charges:</span>
+                                <span class="font-weight-600">₹{{ "%.2f"|format(bill.energy_charges|float) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2 small">
+                                <span class="text-secondary">Fixed Charges & Meter Rent:</span>
+                                <span class="font-weight-600">₹{{ "%.2f"|format(bill.fixed_charge|float + 25) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2 small">
+                                <span class="text-secondary">Fuel Surcharge ({{ bill.fuel_surcharge_rate or 15 }}%):</span>
+                                <span class="font-weight-600">₹{{ "%.2f"|format(bill.fuel_surcharge|float) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2 small">
+                                <span class="text-secondary">GST ({{ bill.gst_rate or 18 }}%):</span>
+                                <span class="font-weight-600">₹{{ "%.2f"|format(bill.gst_amount|float) }}</span>
+                            </div>
+                            <hr class="my-2 border-secondary">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="font-weight-700 uppercase">Total Amount Due:</span>
+                                <span class="display-6 font-weight-800 text-primary">₹{{ "%.2f"|format(bill.total_amount|float) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Controls -->
+                <div class="text-center pt-2 border-top no-print" style="border-color: var(--border-color) !important;">
+                    <button class="btn btn-primary me-2" onclick="window.print()">
+                        <i class="bi bi-printer-fill me-1"></i> Print Invoice
+                    </button>
+                    <button class="btn btn-outline-secondary me-2" onclick="downloadPDF()">
+                        <i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i> Download PDF
+                    </button>
+                    <a href="{{ url_for('readings') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Readings
+                    </a>
+                </div>
+
             </div>
         </div>
     </div>
@@ -135,38 +179,32 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
 function downloadPDF() {
-    const element = document.querySelector('.card');
-    const actionButtons = document.querySelector('.text-center.mt-4');
-    if (actionButtons) {
-        actionButtons.style.visibility = 'hidden';
-    }
+    const element = document.getElementById('invoice-print-area');
+    const noPrintBtn = document.querySelectorAll('.no-print');
+    noPrintBtn.forEach(el => el.style.visibility = 'hidden');
     
     const opt = {
         margin:       10,
-        filename:     'meter_scanner_bill_' + '{{ bill.reading_id }}' + '.pdf',
+        filename:     'meter_scanner_invoice_' + '{{ bill.reading_id }}' + '.pdf',
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true, logging: false },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
     
     html2pdf().from(element).set(opt).save().then(() => {
-        if (actionButtons) {
-            actionButtons.style.visibility = 'visible';
-        }
+        noPrintBtn.forEach(el => el.style.visibility = 'visible');
     }).catch(err => {
         console.error('PDF download failed:', err);
-        if (actionButtons) {
-            actionButtons.style.visibility = 'visible';
-        }
+        noPrintBtn.forEach(el => el.style.visibility = 'visible');
     });
 }
 </script>
 
 <style>
 @media print {
-    .btn { display: none; }
-    .card { border: none; }
-    .card-header { background-color: #fff !important; color: #000 !important; }
+    .no-print, .app-navbar, .chatbot-floating-btn { display: none !important; }
+    body { background-color: #fff !important; color: #000 !important; }
+    .invoice-card { border: none !important; box-shadow: none !important; }
 }
 </style>
 {% endblock %}

@@ -1,109 +1,194 @@
 {% extends "base.html" %}
 
-{% block title %}Capture Reading{% endblock %}
+{% block title %}Scan Meter Reading{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="text-center mb-0">Capture Meter Reading</h3>
-            </div>
-            <div class="card-body">
-                <div id="status" class="alert" style="display: none;"></div>
-                
-                <div id="camera-container" class="text-center mb-4">
-                    <div class="camera-frame">
-                        <img src="{{ url_for('video_feed') }}" class="img-fluid rounded" alt="Live Camera Feed">
-                    </div>
-                </div>
-
-                <div id="instructions" class="alert alert-info mb-4">
-                    <h5 class="alert-heading">Instructions:</h5>
-                    <ol class="mb-0">
-                        <li>Position your meter within the green rectangle</li>
-                        <li>Ensure good lighting and clear visibility of numbers</li>
-                        <li>Keep the camera steady</li>
-                        <li>Press and hold spacebar for 3 seconds to capture</li>
-                    </ol>
-                </div>
-
-                <div id="countdown" class="text-center mb-4" style="display: none;">
-                    <div class="alert alert-warning">
-                        <div class="progress mb-2">
-                            <div id="capture-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
-                        </div>
-                        <h2 class="countdown-text mb-0">Hold steady for <span id="timer">3</span> seconds</h2>
-                        <p class="mb-0">Keep holding spacebar</p>
-                    </div>
-                </div>
-
-                <div id="result" class="text-center mb-4" style="display: none;">
-                    <div class="card">
-                        <div class="card-header bg-success text-white">
-                            <h5 class="mb-0">Captured Successfully!</h5>
-                        </div>
-                        <div class="card-body">
-                            <img id="captured-image" class="img-fluid mb-3 rounded" style="max-width: 100%; height: auto;">
-                            <div id="meter-number-container" class="alert alert-info">
-                                <h5>Detected Reading:</h5>
-                                <p id="meter-number" class="display-4 mb-0">-</p>
-                            </div>
-                            <div id="digits-detail" class="mt-2" style="display:none;">
-                                <span class="badge bg-secondary me-2" id="digit-count-badge"></span>
-                                <div id="digit-list" class="mt-2"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="text-center">
-                    <button id="captureBtn" class="btn btn-primary btn-lg me-2">
-                        <i class="bi bi-camera me-2"></i>Capture
-                    </button>
-                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-lg">
-                        <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <style>
-.camera-frame {
-    max-width: 800px;
-    margin: 0 auto;
-    border: 2px solid #ddd;
-    border-radius: 8px;
+/* Commercial Viewfinder Scanner UI */
+.scanner-card {
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
     overflow: hidden;
-    background-color: #000;
+    box-shadow: var(--shadow-lg);
 }
 
-.camera-frame img {
+.viewfinder-wrapper {
+    position: relative;
+    max-width: 720px;
+    margin: 0 auto;
+    background-color: #000;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.viewfinder-wrapper img {
     width: 100%;
     height: auto;
     display: block;
 }
 
-#countdown .alert {
-    max-width: 400px;
-    margin: 0 auto;
+/* Corner Reticle Brackets */
+.scanner-corner {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border-color: var(--brand-primary);
+    border-style: solid;
+    z-index: 10;
+    pointer-events: none;
+}
+.corner-tl { top: 16px; left: 16px; border-width: 3px 0 0 3px; border-top-left-radius: 4px; }
+.corner-tr { top: 16px; right: 16px; border-width: 3px 3px 0 0; border-top-right-radius: 4px; }
+.corner-bl { bottom: 16px; left: 16px; border-width: 0 0 3px 3px; border-bottom-left-radius: 4px; }
+.corner-br { bottom: 16px; right: 16px; border-width: 0 3px 3px 0; border-bottom-right-radius: 4px; }
+
+.target-alignment-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 75%;
+    height: 45%;
+    border: 2px dashed rgba(37, 99, 235, 0.6);
+    border-radius: var(--radius-md);
+    pointer-events: none;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: 8px;
 }
 
-#result .card {
-    max-width: 800px;
-    margin: 0 auto;
+.alignment-label {
+    background: rgba(15, 23, 42, 0.75);
+    color: #fff;
+    font-size: 0.725rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--radius-sm);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
 }
 
-.progress {
-    height: 10px;
-    border-radius: 5px;
+.result-card-container {
+    max-width: 720px;
+    margin: 0 auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    background-color: var(--bg-main);
+    overflow: hidden;
+}
+
+.result-reading-box {
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
 }
 </style>
 
-<!-- Include Font Awesome for icons -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+        <div class="scanner-card p-3 p-md-4">
+            
+            <!-- Page Title Header -->
+            <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom" style="border-color: var(--border-color) !important;">
+                <div>
+                    <h5 class="mb-0 font-weight-700"><i class="bi bi-camera-fill text-primary me-2"></i>Optical Meter Scanner</h5>
+                    <small class="text-secondary">Position the digital or analog display inside the camera reticle</small>
+                </div>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left"></i> Dashboard
+                </a>
+            </div>
+
+            <!-- Status Alerts -->
+            <div id="status" class="alert shadow-sm border-0 mb-3" style="display: none;"></div>
+            
+            <!-- Camera Viewfinder -->
+            <div id="camera-container" class="text-center mb-4">
+                <div class="viewfinder-wrapper shadow-md">
+                    <div class="scanner-corner corner-tl"></div>
+                    <div class="scanner-corner corner-tr"></div>
+                    <div class="scanner-corner corner-bl"></div>
+                    <div class="scanner-corner corner-br"></div>
+                    
+                    <div class="target-alignment-box">
+                        <span class="alignment-label"><i class="bi bi-bounding-box me-1"></i>Align Digits Here</span>
+                    </div>
+
+                    <img src="{{ url_for('video_feed') }}" class="img-fluid" alt="Live Camera Stream">
+                </div>
+            </div>
+
+            <!-- Scanning Instructions -->
+            <div id="instructions" class="card border-0 p-3 mb-4" style="background-color: var(--bg-main);">
+                <div class="d-flex align-items-center gap-2 mb-2 text-primary font-weight-600">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <span>Scanner Operating Instructions:</span>
+                </div>
+                <ul class="mb-0 small text-secondary ps-3" style="line-height: 1.6;">
+                    <li>Ensure display glass is clean and well-lit without direct light glare.</li>
+                    <li>Align the meter numbers within the central reticle box.</li>
+                    <li>Press **Spacebar** (or click **Capture Meter**) and hold steady for 3 seconds.</li>
+                </ul>
+            </div>
+
+            <!-- Countdown Processing Overlay -->
+            <div id="countdown" class="text-center mb-4" style="display: none;">
+                <div class="card p-4 mx-auto border-0 shadow-sm" style="max-width: 420px; background-color: var(--bg-main);">
+                    <div class="progress mb-3" style="height: 8px; background-color: var(--border-color);">
+                        <div id="capture-progress" class="progress-bar bg-primary progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <h5 class="mb-1 font-weight-700 text-primary">Hold Camera Steady...</h5>
+                    <p class="text-secondary small mb-0">Executing multi-frame OCR extraction (<span id="timer" class="font-weight-700 text-primary">3</span>s remaining)</p>
+                </div>
+            </div>
+
+            <!-- OCR Result Modal Container -->
+            <div id="result" class="mb-4" style="display: none;">
+                <div class="result-card-container p-3 p-md-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="badge badge-success"><i class="bi bi-check-circle-fill me-1"></i>OCR Processing Complete</span>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="retakeScan()">
+                            <i class="bi bi-arrow-counterclockwise"></i> Retake Scan
+                        </button>
+                    </div>
+
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-5 text-center">
+                            <img id="captured-image" class="img-fluid rounded border" style="max-height: 220px; object-fit: cover;" alt="Captured Meter Frame">
+                        </div>
+                        <div class="col-md-7">
+                            <div id="meter-number-container" class="result-reading-box">
+                                <span class="kpi-label">Extracted Meter Reading</span>
+                                <div id="meter-number" class="display-5 font-weight-800 text-primary my-1">-</div>
+                                <small class="text-secondary"><i class="bi bi-cpu me-1"></i>Verified via Tesseract Contour Preprocessing</small>
+                            </div>
+                            
+                            <div id="digits-detail" class="mt-3" style="display:none;">
+                                <span class="badge badge-neutral mb-2" id="digit-count-badge"></span>
+                                <div id="digit-list" class="d-flex flex-wrap gap-1"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Controls -->
+            <div class="text-center pt-2">
+                <button id="captureBtn" class="btn btn-primary btn-lg px-4 me-2">
+                    <i class="bi bi-camera-fill me-1"></i> Capture Meter
+                </button>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
 
 <script>
 let captureStartTime = null;
@@ -112,7 +197,7 @@ const CAPTURE_DURATION = 3000; // 3 seconds in milliseconds
 
 document.addEventListener('keydown', function(event) {
     if (event.code === 'Space' && !captureStartTime && document.getElementById('result').style.display === 'none') {
-        event.preventDefault(); // Prevent page scrolling
+        event.preventDefault();
         startCapture();
     }
 });
@@ -124,7 +209,6 @@ document.addEventListener('keyup', function(event) {
 });
 
 function startCapture() {
-    console.log('startCapture called');
     const countdown = document.getElementById('countdown');
     const timer = document.getElementById('timer');
     const progressBar = document.getElementById('capture-progress');
@@ -132,21 +216,15 @@ function startCapture() {
     const status = document.getElementById('status');
     const captureBtn = document.getElementById('captureBtn');
     
-    if (!countdown || !timer || !progressBar || !instructions || !status || !captureBtn) {
-        console.error('Required DOM elements not found');
-        return;
-    }
+    if (!countdown || !timer || !progressBar || !instructions || !status || !captureBtn) return;
     
-    // Reset displays
     status.style.display = 'none';
     countdown.style.display = 'block';
     instructions.style.display = 'none';
     if (captureBtn) captureBtn.disabled = true;
     
     captureStartTime = Date.now();
-    console.log('Capture started at:', captureStartTime);
     
-    // Start countdown
     captureTimer = setInterval(() => {
         const elapsed = Date.now() - captureStartTime;
         const remaining = Math.ceil((CAPTURE_DURATION - elapsed) / 1000);
@@ -158,7 +236,7 @@ function startCapture() {
         if (elapsed >= CAPTURE_DURATION) {
             completeCapture();
         }
-    }, 50); // Update every 50ms for smooth progress bar
+    }, 50);
 }
 
 function cancelCapture() {
@@ -194,70 +272,63 @@ function completeCapture() {
     countdown.style.display = 'none';
     progressBar.style.width = '0%';
     
-    // Take photo
-    fetch('/take_photo', {
-        method: 'POST'
-    })
+    fetch('/take_photo', { method: 'POST' })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            status.className = 'alert alert-success';
+            status.className = 'alert alert-success border-0 shadow-sm';
             status.textContent = data.message;
             capturedImage.src = '/static/uploads/' + data.image_path;
-            meterNumber.textContent = data.meter_number || 'No number detected';
+            meterNumber.textContent = (data.meter_number || 'No number detected') + ' kWh';
             cameraContainer.style.display = 'none';
             result.style.display = 'block';
 
-            // Show digits detail if present
             const digitsDetail = document.getElementById('digits-detail');
             const digitCountBadge = document.getElementById('digit-count-badge');
             const digitList = document.getElementById('digit-list');
             if (data.digit_count && data.digits && Array.isArray(data.digits)) {
-                digitCountBadge.textContent = `Digits detected: ${data.digit_count}`;
-                digitList.innerHTML = data.digits.map(d => `<span class='badge bg-info text-dark me-1'>${d}</span>`).join('');
+                digitCountBadge.textContent = `Extracted Segment Contours: ${data.digit_count}`;
+                digitList.innerHTML = data.digits.map(d => `<span class='badge badge-info'>${d}</span>`).join('');
                 digitsDetail.style.display = 'block';
             } else {
                 digitsDetail.style.display = 'none';
             }
         } else {
-            status.className = 'alert alert-danger';
+            status.className = 'alert alert-danger border-0 shadow-sm';
             status.textContent = data.error || 'Failed to capture image';
-            instructions.style.display = 'block';
+            document.getElementById('instructions').style.display = 'block';
         }
         status.style.display = 'block';
         if (captureBtn) captureBtn.disabled = false;
     })
     .catch(error => {
-        status.className = 'alert alert-danger';
+        status.className = 'alert alert-danger border-0 shadow-sm';
         status.textContent = 'Error: ' + error;
         status.style.display = 'block';
-        instructions.style.display = 'block';
+        document.getElementById('instructions').style.display = 'block';
         if (captureBtn) captureBtn.disabled = false;
     });
 }
 
-// Close camera when leaving the page
+function retakeScan() {
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('status').style.display = 'none';
+    document.getElementById('camera-container').style.display = 'block';
+    document.getElementById('instructions').style.display = 'block';
+}
+
 window.addEventListener('beforeunload', function() {
-    fetch('/close_camera', {
-        method: 'POST'
-    });
+    fetch('/close_camera', { method: 'POST' });
 });
 
-// Button click should trigger the same 3-second capture flow
 document.addEventListener('DOMContentLoaded', function() {
     const captureBtn = document.getElementById('captureBtn');
     if (captureBtn) {
         captureBtn.addEventListener('click', function() {
-            console.log('Capture button clicked');
             if (!captureStartTime && document.getElementById('result').style.display === 'none') {
-                console.log('Starting capture...');
                 startCapture();
-            } else {
-                console.log('Capture already in progress or result already shown');
             }
         });
-    } else {
-        console.error('Capture button not found!');
     }
 });
 </script>

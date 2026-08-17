@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Smart Home Integrations{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+    <div>
+        <h4 class="mb-1 font-weight-700"><i class="bi bi-cpu-fill text-primary me-2"></i>Smart Home & IoT Devices</h4>
+        <p class="text-secondary small mb-0">Integrate real-time IoT energy monitors, smart plugs, and automated meter sync</p>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-12 col-md-4">
+        <div class="card p-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <h6 class="mb-0 font-weight-600"><i class="bi bi-wifi text-success me-2"></i>Tuya Smart Plug</h6>
+                <span class="badge badge-success">Connected</span>
+            </div>
+            <p class="text-secondary small mb-2">Living Room AC Monitoring</p>
+            <div class="text-primary font-weight-700">1.4 kW <small class="text-muted fs-6">real-time</small></div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="card p-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <h6 class="mb-0 font-weight-600"><i class="bi bi-cpu text-primary me-2"></i>Shelly EM Meter</h6>
+                <span class="badge badge-success">Online</span>
+            </div>
+            <p class="text-secondary small mb-2">Main Panel Phase 1</p>
+            <div class="text-primary font-weight-700">235 V · 12.4 A</div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="card p-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <h6 class="mb-0 font-weight-600"><i class="bi bi-cloud-check text-info me-2"></i>Home Assistant API</h6>
+                <span class="badge badge-info">Synced</span>
+            </div>
+            <p class="text-secondary small mb-2">Automated Reading Sync</p>
+            <div class="text-primary font-weight-700">Every 15 mins</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

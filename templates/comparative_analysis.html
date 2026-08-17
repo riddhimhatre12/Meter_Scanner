@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Comparative Analysis{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+    <div>
+        <h4 class="mb-1 font-weight-700"><i class="bi bi-bar-chart-line text-primary me-2"></i>Comparative Consumption Benchmark</h4>
+        <p class="text-secondary small mb-0">Compare your household consumption against regional averages and eco-efficient benchmarks</p>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+        <div class="kpi-card text-center">
+            <div class="kpi-label">Your Household Avg</div>
+            <div class="kpi-value text-primary">245 <small class="fs-6 text-muted">kWh</small></div>
+            <div class="kpi-subtext text-success"><i class="bi bi-shield-check me-1"></i> Current billing cycle</div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="kpi-card text-center">
+            <div class="kpi-label">Regional Average</div>
+            <div class="kpi-value text-warning">280 <small class="fs-6 text-muted">kWh</small></div>
+            <div class="kpi-subtext text-success"><i class="bi bi-arrow-down-short me-1"></i> 12.5% below region</div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="kpi-card text-center">
+            <div class="kpi-label">Eco Benchmark</div>
+            <div class="kpi-value text-success">210 <small class="fs-6 text-muted">kWh</small></div>
+            <div class="kpi-subtext text-secondary"><i class="bi bi-flag me-1"></i> Target for 5-star rating</div>
+        </div>
+    </div>
+</div>
+
+<div class="card p-4">
+    <h6 class="font-weight-600 mb-3">Efficiency Grade Breakdown</h6>
+    <div class="progress mb-2" style="height: 12px; background-color: var(--border-color);">
+        <div class="progress-bar bg-success" style="width: 78%;">Grade A (78/100)</div>
+    </div>
+    <small class="text-secondary">Your consumption is 78% more efficient than households in your postal code with similar occupancy.</small>
+</div>
+{% endblock %}
