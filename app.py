@@ -1216,253 +1216,293 @@ def submit_complaint():
 def capture():
     return render_template('capture.html')
 
+# Auto-detect Tesseract OCR executable on Windows
+tesseract_possible_paths = [
+    r'C:\Program Files\Tesseract-OCR\tesseract.exe',
+    r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe',
+    r'C:\Users\admin\AppData\Local\Programs\Tesseract-OCR\tesseract.exe',
+    os.path.join(os.environ.get('LOCALAPPDATA', ''), 'Programs', 'Tesseract-OCR', 'tesseract.exe'),
+    os.path.join(os.environ.get('PROGRAMFILES', ''), 'Tesseract-OCR', 'tesseract.exe'),
+    os.path.join(os.environ.get('PROGRAMFILES(X86)', ''), 'Tesseract-OCR', 'tesseract.exe')
+]
+for tpath in tesseract_possible_paths:
+    if tpath and os.path.exists(tpath):
+        pytesseract.pytesseract.tesseract_cmd = tpath
+        logger.info(f"Configured Tesseract OCR binary: {tpath}")
+        break
+
+
+def recognize_7segment_digit(roi_binary):
+    """
+    Recognize a single 7-segment LED/LCD digit ROI using OpenCV segment density analysis.
+    Returns detected digit character ('0'-'9') and confidence score.
+    """
+    if roi_binary is None or roi_binary.size == 0:
+        return None, 0.0
+        
+    h, w = roi_binary.shape
+    if h < 8 or w < 4:
+        return None, 0.0
+
+    # Aspect ratio check for digit 1
+    aspect_ratio = w / float(h)
+    if aspect_ratio < 0.35:
+        # Thin vertical line is almost certainly '1'
+        return '1', 0.85
+
+    # Define the 7 segments regions on normalized ROI (h, w)
+    dw = int(w * 0.25)
+    dh = int(h * 0.15)
+    mid_y = int(h * 0.5)
+
+    segments = [
+        ((0, 0), (w, dh)),                      # Top (0)
+        ((0, 0), (dw, mid_y)),                  # Top-Left (1)
+        ((w - dw, 0), (w, mid_y)),              # Top-Right (2)
+        ((0, mid_y - dh//2), (w, mid_y + dh//2)),# Middle (3)
+        ((0, mid_y), (dw, h)),                  # Bottom-Left (4)
+        ((w - dw, mid_y), (w, h)),              # Bottom-Right (5)
+        ((0, h - dh), (w, h))                   # Bottom (6)
+    ]
+
+    on = [0] * 7
+    for i, ((x1, y1), (x2, y2)) in enumerate(segments):
+        seg_roi = roi_binary[y1:y2, x1:x2]
+        if seg_roi.size == 0:
+            continue
+        total_pixels = seg_roi.size
+        count = cv2.countNonZero(seg_roi)
+        # Segment is active if >25% pixels are ON
+        if (count / float(total_pixels)) > 0.25:
+            on[i] = 1
+
+    SEGMENT_LOOKUP = {
+        (1, 1, 1, 0, 1, 1, 1): '0',
+        (0, 0, 1, 0, 0, 1, 0): '1',
+        (1, 0, 1, 1, 1, 0, 1): '2',
+        (1, 0, 1, 1, 0, 1, 1): '3',
+        (0, 1, 1, 1, 0, 1, 0): '4',
+        (1, 1, 0, 1, 0, 1, 1): '5',
+        (1, 1, 0, 1, 1, 1, 1): '6',
+        (1, 0, 1, 0, 0, 1, 0): '7',
+        (1, 1, 1, 1, 1, 1, 1): '8',
+        (1, 1, 1, 1, 0, 1, 1): '9',
+    }
+
+    tup_on = tuple(on)
+    if tup_on in SEGMENT_LOOKUP:
+        return SEGMENT_LOOKUP[tup_on], 0.90
+        
+    # Match closest segment lookup pattern if exact match fails
+    best_match_digit = None
+    min_diff = 8
+    for pattern, digit in SEGMENT_LOOKUP.items():
+        diff = sum(1 for a, b in zip(on, pattern) if a != b)
+        if diff < min_diff:
+            min_diff = diff
+            best_match_digit = digit
+            
+    if min_diff <= 2:
+        return best_match_digit, 0.70
+
+    return None, 0.0
+
+
 def extract_meter_number(image, debug_mode=False):
     """
-    Enhanced meter number extraction with improved preprocessing and digit detection.
+    Enhanced Multi-Stage Meter OCR Engine.
+    Handles image file paths or BGR OpenCV numpy arrays.
     
     Args:
-        image: Input image in BGR format
-        debug_mode: If True, returns debug information and images
-        
-    Returns:
-        If debug_mode is False: Detected meter number as string
-        If debug_mode is True: Tuple of (detected_number, debug_info, processed_images)
+        image: Filepath string OR BGR image numpy array.
+        debug_mode: If True, returns extended debug information.
     """
     try:
-        debug_info = []
         processed_images = {}
         
-        # Convert to grayscale and store for debug
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # 1. Input normalization: Handle string filepaths cleanly
+        if isinstance(image, str):
+            if not os.path.exists(image):
+                logger.error(f"Image filepath not found: {image}")
+                return None if not debug_mode else (None, {'error': 'File not found'}, {})
+            img_bgr = cv2.imread(image)
+            if img_bgr is None:
+                return None if not debug_mode else (None, {'error': 'Failed to read image file'}, {})
+        else:
+            img_bgr = image.copy()
+
+        if img_bgr is None or img_bgr.size == 0:
+            return None if not debug_mode else (None, {'error': 'Invalid image matrix'}, {})
+
+        # Convert to Grayscale
+        gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
         if debug_mode:
             processed_images['01_original_gray'] = gray.copy()
-        
-        # Get center region of the image (where meter likely is)
-        height, width = gray.shape
-        center_y, center_x = height // 2, width // 2
-        crop_height = int(height * 0.8)  # Increased to 80% to capture more context
-        crop_width = int(width * 0.9)
-        
-        # Crop to center region with boundary checks
-        crop_y1 = max(0, center_y - crop_height//2)
-        crop_y2 = min(height, center_y + crop_height//2)
-        crop_x1 = max(0, center_x - crop_width//2)
-        crop_x2 = min(width, center_x + crop_width//2)
-        gray_cropped = gray[crop_y1:crop_y2, crop_x1:crop_x2]
-        
+            
+        h_orig, w_orig = gray.shape
+
+        # 2. Multi-region Crop Strategy (Full image & 85% Center Crop)
+        crop_h = int(h_orig * 0.85)
+        crop_w = int(w_orig * 0.92)
+        cy, cx = h_orig // 2, w_orig // 2
+        y1, y2 = max(0, cy - crop_h // 2), min(h_orig, cy + crop_h // 2)
+        x1, x2 = max(0, cx - crop_w // 2), min(w_orig, cx + crop_w // 2)
+        gray_cropped = gray[y1:y2, x1:x2]
+
         if debug_mode:
             processed_images['02_cropped'] = gray_cropped.copy()
-        
-        # --- Enhanced Preprocessing Pipeline ---
-        # Method 1: Standard preprocessing
-        processed_results = []
-        
-        # 1. Denoise with bilateral filter (preserves edges better)
+
+        # 3. Enhanced Preprocessing (Bilateral Filter + CLAHE + Multiple Thresholds)
         denoised = cv2.bilateralFilter(gray_cropped, 9, 75, 75)
-        
-        # 2. Contrast enhancement using CLAHE
         clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
         clahe_applied = clahe.apply(denoised)
+
+        threshold_methods = []
         
-        # 3. Multiple thresholding approaches
-        methods = []
-        
-        # Method A: Adaptive threshold
-        binary_adaptive = cv2.adaptiveThreshold(
-            clahe_applied, 255, 
-            cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-            cv2.THRESH_BINARY_INV, 15, 8
+        # Adaptive Gaussian
+        th_adaptive = cv2.adaptiveThreshold(
+            clahe_applied, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 15, 8
         )
-        methods.append(('adaptive', binary_adaptive))
+        threshold_methods.append(('adaptive', th_adaptive))
         
-        # Method B: Otsu threshold
-        _, binary_otsu = cv2.threshold(clahe_applied, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-        methods.append(('otsu', binary_otsu))
-        
-        # Method C: Local threshold with different parameters
-        binary_local = cv2.adaptiveThreshold(
-            clahe_applied, 255, 
-            cv2.ADAPTIVE_THRESH_MEAN_C, 
-            cv2.THRESH_BINARY_INV, 11, 5
-        )
-        methods.append(('local', binary_local))
-        
-        if debug_mode:
-            processed_images['03_denoised'] = denoised
-            processed_images['04_clahe'] = clahe_applied
-            processed_images['05_adaptive'] = binary_adaptive
-            processed_images['06_otsu'] = binary_otsu
-            processed_images['07_local'] = binary_local
-        
-        # Try each method and collect results
-        best_result = ""
-        best_confidence = 0
-        best_method = ""
-        
-        for method_name, binary_img in methods:
-            # Morphological operations to clean up
-            kernel_small = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
-            kernel_medium = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+        # Otsu Thresholding
+        _, th_otsu = cv2.threshold(clahe_applied, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+        threshold_methods.append(('otsu', th_otsu))
+
+        # Morphological Closing to join 7-segment gaps
+        kernel_close = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+        th_closed = cv2.morphologyEx(th_adaptive, cv2.MORPH_CLOSE, kernel_close)
+        threshold_methods.append(('closed_7segment', th_closed))
+
+        best_detected_digits = ""
+        best_overall_confidence = 0.0
+        best_method_name = "none"
+        digit_confidence_list = []
+
+        # 4. PASS 1: Contour Digit Segment Extraction & Recognition
+        for method_name, binary_img in threshold_methods:
+            contours, _ = cv2.findContours(binary_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             
-            cleaned = cv2.morphologyEx(binary_img, cv2.MORPH_CLOSE, kernel_small)
-            cleaned = cv2.morphologyEx(cleaned, cv2.MORPH_OPEN, kernel_small)
-            
-            # Find contours
-            contours, _ = cv2.findContours(cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            
-            # Filter contours for digit-like shapes
-            digit_contours = []
-            img_height, img_width = cleaned.shape
-            min_area = 50
-            max_area = (img_height * img_width) * 0.1  # Max 10% of image area
-            
-            for contour in contours:
-                x, y, w, h = cv2.boundingRect(contour)
-                area = cv2.contourArea(contour)
+            digit_candidates = []
+            img_h, img_w = binary_img.shape
+            min_area = 40
+            max_area = (img_h * img_w) * 0.12
+
+            for cnt in contours:
+                x, y, w, h = cv2.boundingRect(cnt)
+                area = cv2.contourArea(cnt)
                 aspect_ratio = w / float(h) if h > 0 else 0
                 
-                # Enhanced filtering for digits
                 if (min_area < area < max_area and 
-                    0.15 < aspect_ratio < 1.5 and  # Wider aspect ratio range
-                    h > 10 and w > 5 and  # Minimum size requirements
-                    h < img_height * 0.5 and w < img_width * 0.3):  # Maximum size limits
-                    digit_contours.append((x, y, w, h, area, aspect_ratio))
-            
-            # Sort contours by area descending to keep the most significant (largest) candidate digits,
-            # up to a maximum of 8 contours, then sort them left-to-right to prevent performance explosion on noise.
-            if len(digit_contours) > 8:
-                digit_contours.sort(key=lambda x: x[4], reverse=True)
-                digit_contours = digit_contours[:8]
-            digit_contours.sort(key=lambda x: x[0])
-            
-            # Extract digits using multiple OCR approaches
-            method_result = ""
-            method_confidences = []
-            
-            for i, (x, y, w, h, area, aspect_ratio) in enumerate(digit_contours):
-                # Extract ROI from the original grayscale image (better for OCR)
-                roi = gray_cropped[y:y+h, x:x+w]
-                
-                # Multiple preprocessing for OCR
-                roi_results = []
-                
-                # Approach 1: Direct OCR
-                roi_enhanced = cv2.resize(roi, (w*3, h*3), interpolation=cv2.INTER_CUBIC)
-                _, roi_thresh = cv2.threshold(roi_enhanced, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-                
-                # Approach 2: Inverted
-                roi_inverted = cv2.bitwise_not(roi_thresh)
-                
+                    0.10 < aspect_ratio < 2.2 and 
+                    h > 10 and w > 4 and 
+                    h < img_h * 0.65 and w < img_w * 0.35):
+                    digit_candidates.append((x, y, w, h, area))
 
+            if not digit_candidates:
+                continue
+
+            # Limit to top candidate contours sorted left-to-right
+            if len(digit_candidates) > 10:
+                digit_candidates.sort(key=lambda item: item[4], reverse=True)
+                digit_candidates = digit_candidates[:10]
+            digit_candidates.sort(key=lambda item: item[0])
+
+            current_sequence = ""
+            current_confidences = []
+
+            for (x, y, w, h, _) in digit_candidates:
+                roi_bin = binary_img[y:y+h, x:x+w]
+                roi_gray = gray_cropped[y:y+h, x:x+w]
                 
-                for roi_version in [roi_thresh, roi_inverted]:
-                    # Add padding
-                    padded = cv2.copyMakeBorder(roi_version, 10, 10, 10, 10, 
-                                              cv2.BORDER_CONSTANT, value=255 if roi_version is roi_inverted else 0)
+                char_found = None
+                char_conf = 0.0
+
+                # A. Try Tesseract single char (if available)
+                try:
+                    roi_resized = cv2.resize(roi_gray, (w * 3, h * 3), interpolation=cv2.INTER_CUBIC)
+                    _, roi_th = cv2.threshold(roi_resized, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+                    padded = cv2.copyMakeBorder(roi_th, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=0)
                     
-                    # Single character PSM is best suited for individual cropped digits
-                    configs = [
-                        r'--oem 3 --psm 10 -c tessedit_char_whitelist=0123456789'
-                    ]
-                    
-                    for config in configs:
-                        try:
-                            result = pytesseract.image_to_string(padded, config=config)
-                            data = pytesseract.image_to_data(padded, config=config, output_type=pytesseract.Output.DICT)
-                            
-                            if data['text'] and len(data['text']) > 0 and data['text'][0].strip():
-                                digit = data['text'][0].strip()
-                                if digit.isdigit():
-                                    confidence = float(data['conf'][0]) / 100.0
-                                    if confidence > 0.5:  # Minimum confidence threshold
-                                        roi_results.append((digit, confidence))
-                                        break
-                        except:
-                            continue
-                    
-                    if roi_results:
-                        break
-                
-                # Take the best result for this ROI
-                if roi_results:
-                    best_digit, best_digit_conf = max(roi_results, key=lambda x: x[1])
-                    method_result += best_digit
-                    method_confidences.append(best_digit_conf)
-            
-            # Calculate method confidence
-            method_avg_conf = sum(method_confidences) / len(method_confidences) if method_confidences else 0
-            
-            # Update best result if this method is better (longer sequence, or same length with higher confidence)
-            if len(method_result) >= 2:
-                if (not best_result or 
-                    len(method_result) > len(best_result) or 
-                    (len(method_result) == len(best_result) and method_avg_conf > best_confidence)):
-                    best_result = method_result
-                    best_confidence = method_avg_conf
-                    best_method = method_name
-        
-        # If we successfully extracted digit contours, return the best candidate
-        if best_result:
-            if debug_mode:
-                debug_info = {
-                    'detected_number': best_result,
-                    'confidence': best_confidence,
-                    'method_used': best_method,
-                    'num_digits': len(best_result),
-                    'validation': 'success'
-                }
-                return best_result, debug_info, processed_images
-            return best_result
-        
-        # Fallback 1: Try whole image OCR with multiple PSM modes
-        try:
-            # Enhance the entire cropped image
-            enhanced = cv2.resize(gray_cropped, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-            enhanced = clahe.apply(enhanced)
-            _, enhanced_thresh = cv2.threshold(enhanced, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-            
-            # Try modes for single block of text vs single line vs sparse numbers
-            for psm in ['6', '7', '11']:
-                whole_config = f'--oem 3 --psm {psm} -c tessedit_char_whitelist=0123456789'
-                whole_result = pytesseract.image_to_string(enhanced_thresh, config=whole_config)
-                
-                # Extract numbers from the result
-                nums = re.findall(r'\d+', whole_result)
-                if nums:
-                    # Take the longest numeric string found
-                    fallback_result = max(nums, key=len)
-                    if len(fallback_result) >= 2:
-                        if debug_mode:
-                            fallback_info = {
-                                'detected_number': fallback_result,
-                                'confidence': 0.70,
-                                'method_used': f'fallback_psm_{psm}',
-                                'num_digits': len(fallback_result),
-                                'validation': 'success'
-                            }
-                            return fallback_result, fallback_info, processed_images
-                        return fallback_result
-        except Exception as e:
-            logger.error(f'Fallback 1 failed: {e}')
-        
+                    tess_data = pytesseract.image_to_data(
+                        padded, 
+                        config=r'--oem 3 --psm 10 -c tessedit_char_whitelist=0123456789', 
+                        output_type=pytesseract.Output.DICT
+                    )
+                    if tess_data['text'] and tess_data['text'][0].strip().isdigit():
+                        char_found = tess_data['text'][0].strip()
+                        char_conf = float(tess_data['conf'][0]) / 100.0
+                except Exception:
+                    pass
+
+                # B. Fallback to 7-Segment OpenCV classifier if Tesseract fails or confidence low
+                if not char_found or char_conf < 0.5:
+                    seg_char, seg_conf = recognize_7segment_digit(roi_bin)
+                    if seg_char:
+                        char_found = seg_char
+                        char_conf = seg_conf
+
+                if char_found and char_conf > 0.4:
+                    current_sequence += char_found
+                    current_confidences.append(char_conf)
+
+            if len(current_sequence) >= 2:
+                avg_conf = sum(current_confidences) / len(current_confidences)
+                if (len(current_sequence) > len(best_detected_digits) or 
+                    (len(current_sequence) == len(best_detected_digits) and avg_conf > best_overall_confidence)):
+                    best_detected_digits = current_sequence
+                    best_overall_confidence = avg_conf
+                    best_method_name = method_name
+                    digit_confidence_list = current_confidences
+
+        # 5. PASS 2: Full Crop Tesseract Line OCR Fallback
+        if len(best_detected_digits) < 2:
+            try:
+                for psm_mode in ['7', '6', '11']:
+                    tess_config = f'--oem 3 --psm {psm_mode} -c tessedit_char_whitelist=0123456789'
+                    text = pytesseract.image_to_string(clahe_applied, config=tess_config)
+                    nums = re.findall(r'\d+', text)
+                    if nums:
+                        candidate = max(nums, key=len)
+                        if len(candidate) >= 2:
+                            best_detected_digits = candidate
+                            best_overall_confidence = 0.75
+                            best_method_name = f'full_crop_psm_{psm_mode}'
+                            break
+            except Exception:
+                pass
+
+        # 6. Final Result Formulation
+        if best_detected_digits:
+            clean_digits = re.sub(r'\D', '', best_detected_digits)
+            if len(clean_digits) >= 2:
+                if debug_mode:
+                    return clean_digits, {
+                        'detected_number': clean_digits,
+                        'confidence': round(best_overall_confidence, 2),
+                        'method_used': best_method_name,
+                        'num_digits': len(clean_digits),
+                        'digits': list(clean_digits),
+                        'validation': 'success'
+                    }, processed_images
+                return clean_digits
+
         if debug_mode:
-            debug_info = {
+            return None, {
                 'detected_number': None,
-                'confidence': 0,
+                'confidence': 0.0,
                 'method_used': 'none',
                 'num_digits': 0,
+                'digits': [],
                 'validation': 'failed'
-            }
-            return None, debug_info, processed_images
-        
+            }, processed_images
+
         return None
-        
+
     except Exception as e:
         logger.error(f"Error in extract_meter_number: {str(e)}")
         if debug_mode:
-            debug_info = {'error': str(e)}
-            return None, debug_info, {}
+            return None, {'error': str(e)}, {}
         return None
 
 @app.route('/gen_frames')
