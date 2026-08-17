@@ -119,6 +119,9 @@
                         <button class="btn btn-primary me-2" onclick="window.print()">
                             <i class="fas fa-print me-2"></i>Print Bill
                         </button>
+                        <button class="btn btn-success me-2" onclick="downloadPDF()">
+                            <i class="fas fa-file-pdf me-2"></i>Download PDF
+                        </button>
                         <a href="{{ url_for('readings') }}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left me-2"></i>Back to Readings
                         </a>
@@ -128,6 +131,36 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+function downloadPDF() {
+    const element = document.querySelector('.card');
+    const actionButtons = document.querySelector('.text-center.mt-4');
+    if (actionButtons) {
+        actionButtons.style.visibility = 'hidden';
+    }
+    
+    const opt = {
+        margin:       10,
+        filename:     'meter_scanner_bill_' + '{{ bill.reading_id }}' + '.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    html2pdf().from(element).set(opt).save().then(() => {
+        if (actionButtons) {
+            actionButtons.style.visibility = 'visible';
+        }
+    }).catch(err => {
+        console.error('PDF download failed:', err);
+        if (actionButtons) {
+            actionButtons.style.visibility = 'visible';
+        }
+    });
+}
+</script>
 
 <style>
 @media print {

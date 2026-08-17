@@ -298,11 +298,16 @@ function now(){
     return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 }
 
-/* Render **bold** markdown */
+/* Render markdown (headers, bold, italics) */
 function renderMd(text){
-    return text
+    if(!text) return '';
+    let html = text
         .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-        .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+        .replace(/^### (.*$)/gim, '<h4 style="margin:0.4rem 0 0.2rem 0;color:var(--accent);font-weight:700;font-size:0.95rem;">$1</h4>')
+        .replace(/^## (.*$)/gim, '<h3 style="margin:0.5rem 0 0.2rem 0;color:var(--accent);font-weight:700;font-size:1rem;">$1</h3>')
+        .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g,'<em>$1</em>');
+    return html;
 }
 
 function addMsg(text, isUser){

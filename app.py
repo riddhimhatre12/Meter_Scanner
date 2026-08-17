@@ -500,9 +500,57 @@ def chatbot():
 @app.route('/chat', methods=['POST'])
 def chat():
     try:
-        data = request.get_json()
-        msg  = data.get('message', '').lower().strip()
-        nums = re.findall(r'\d+\.?\d*', msg)
+        data = request.get_json() or {}
+        msg = data.get('message', '').strip()
+        if not msg:
+            return jsonify({'response': 'Please enter a message.', 'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')})
+            
+        # Check for Gemini API key
+        gemini_api_key = os.environ.get('GEMINI_API_KEY') or os.environ.get('GOOGLE_API_KEY')
+        
+        # If API key is set, use Gemini API for professional response
+        if gemini_api_key:
+            try:
+                import google.generativeai as genai
+                genai.configure(api_key=gemini_api_key)
+                
+                # Use gemini-1.5-flash
+                model = genai.GenerativeModel(
+                    model_name="gemini-1.5-flash",
+                    system_instruction=(
+                        "You are MeterBot, a professional AI customer service assistant for Meter Scanner Pro. "
+                        "Meter Scanner Pro is a utility meter tracking application that allows users to scan their digital "
+                        "and analog electricity, water, or gas meters using their camera, perform OCR to extract readings, "
+                        "calculate bills, view consumption trends/analytics, set alerts/budget limits, and schedule maintenance. "
+                        "Always respond professionally, politely, and helpfully. Keep your responses relatively concise. "
+                        "Answer in the same language as the user. If they ask off-topic questions (e.g., weather, politics, jokes, generic programming), "
+                        "politely pivot back to helping them with Meter Scanner Pro services or utility management."
+                    )
+                )
+                
+                response = model.generate_content(msg)
+                if response.text:
+                    return jsonify({'response': response.text, 'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')})
+            except Exception as e:
+                logger.error(f"Gemini API chat failed, falling back to rule-based: {e}")
+        
+        # Safely handle translation only if non-ASCII characters exist
+        msg_en = msg.lower().strip()
+        detected_lang = 'en'
+        
+        is_non_ascii = any(ord(c) > 127 for c in msg)
+        if is_non_ascii:
+            try:
+                from deep_translator import GoogleTranslator
+                translator_to_en = GoogleTranslator(source='auto', target='en')
+                translated = translator_to_en.translate(msg)
+                if translated:
+                    msg_en = translated.lower().strip()
+                detected_lang = getattr(translator_to_en, 'source', 'en') or 'en'
+            except Exception as e:
+                logger.warning(f"Translation service unavailable, using raw text: {e}")
+                msg_en = msg.lower().strip()
+                detected_lang = 'en'
 
         OFF_TOPIC = ['weather','cricket','football','movie','song','recipe',
             'politics','news','stock','crypto','bitcoin','relationship',
@@ -511,205 +559,182 @@ def chat():
             'who invented','physics','mathematics','game','sport',
             'fashion','travel','hotel','flight','instagram','facebook',
             'twitter','youtube','tiktok']
+        
+        # Numbers in the English message
+        nums = re.findall(r'\d+\.?\d*', msg_en)
+        
+        # Match against professional replies
+        r_en = ""
+        
+        if any(k in msg_en for k in OFF_TOPIC):
+            r_en = ("Sorry, I can only assist with **Meter Scanner Pro** and utility management topics! ⚡\n\n"
+                    "I specialize in:\n"
+                    "• 📷 **Meter scanning** and OCR\n"
+                    "• 💰 **Bill calculation** and Indian slab rates\n"
+                    "• 📊 **Usage analytics** and consumption trends\n"
+                    "• 🔔 **Smart alerts** and monthly budget planning\n"
+                    "• 💡 **Energy-saving recommendations**\n"
+                    "• 🔧 **Scanning troubleshooting** & meter maintenance\n\n"
+                    "Please ask about your utility meters or energy bills and I'll be happy to help! 😊")
 
-        if any(k in msg for k in OFF_TOPIC):
-            r = ('Sorry, I can only help with Meter Scanner Pro topics! \u26a1\n\n'
-                 'I specialise in:\n'
-                 '\U0001f4f7 Meter scanning and OCR\n'
-                 '\U0001f4b0 Bill calculation\n'
-                 '\U0001f4ca Analytics and trends\n'
-                 '\U0001f514 Alerts and budgets\n'
-                 '\U0001f4a1 Energy-saving tips\n'
-                 '\U0001f527 Troubleshooting\n\n'
-                 'Please ask about your meters and I\'ll be happy to help! \U0001f60a')
-
-        elif any(w in msg for w in ['hello','hi','hey','greetings','good morning','good afternoon','good evening','namaste']):
-            r = ('Hello! \U0001f44b I\'m **MeterBot**, your smart energy assistant.\n\n'
-                 'I can help you with:\n'
-                 '\U0001f4f7 Scan meters | \U0001f4b0 Calculate bills | \U0001f4ca Analytics\n'
-                 '\U0001f514 Alerts | \U0001f4a1 Energy tips | \U0001f527 Troubleshooting\n\n'
-                 'What would you like help with today?')
-
-        elif any(w in msg for w in ['who are you','what are you','your name','introduce','about you','what can you do']):
-            r = ('I\'m **MeterBot** \U0001f916 \u2014 the AI assistant for Meter Scanner Pro.\n\n'
-                 'I can help with:\n'
-                 '\u2022 \U0001f4f7 AI meter scanning and OCR\n'
-                 '\u2022 \U0001f4b0 Bill calculation with Indian slab rates\n'
-                 '\u2022 \U0001f4ca Usage analytics and monthly trends\n'
-                 '\u2022 \U0001f514 Smart alerts and threshold notifications\n'
-                 '\u2022 \U0001f4c5 Monthly budget planning\n'
-                 '\u2022 \U0001f331 Energy saving tips\n'
-                 '\u2022 \U0001f527 Scanning troubleshooting\n'
-                 '\u2022 \U0001f4c1 CSV data export\n'
-                 '\u2022 \U0001f464 Account and Google login help\n\n'
-                 'Available 24/7 \u26a1')
-
-        elif any(w in msg for w in ['scan','capture','camera','ocr','take photo','read meter','how to scan','meter reading']):
-            r = ('How to scan your meter: \U0001f4f7\n\n'
-                 '1\ufe0f\u20e3 Dashboard \u2192 Scan Meter\n'
-                 '2\ufe0f\u20e3 Allow camera access\n'
-                 '3\ufe0f\u20e3 Centre the meter in the frame\n'
-                 '4\ufe0f\u20e3 Ensure good, even lighting\n'
-                 '5\ufe0f\u20e3 Tap Capture \u2014 OCR reads instantly!\n\n'
-                 '\u2705 Supports Digital, Analog, Smart, Water and Gas meters\n\n'
-                 '\U0001f4a1 Tip: Clean the display before scanning for best accuracy.')
-
-        elif any(w in msg for w in ['slab','tariff','per unit','electricity rate','kwh rate','unit rate']):
-            r = ('\u26a1 Indian Electricity Rate Slabs\n\n'
-                 '0\u201350 units    \u2192 \u20b92.50/unit (Lifeline)\n'
-                 '51\u2013100 units  \u2192 \u20b93.50/unit\n'
-                 '101\u2013300 units \u2192 \u20b94.50/unit\n'
-                 '301\u2013500 units \u2192 \u20b96.50/unit\n'
-                 '500+ units    \u2192 \u20b98.50/unit\n\n'
-                 'Extra: Fuel surcharge 15% | GST 18% | Meter rent \u20b925\n'
-                 '\u2600\ufe0f Summer +20% | \u2744\ufe0f Winter -10% | Peak hrs +25%')
-
-        elif any(w in msg for w in ['bill','calculate','cost','charge','amount','invoice','payment']):
+        elif any(w in msg_en for w in ['hello','hi','hey','greetings','good morning','good afternoon','good evening','namaste']):
+            r_en = ("Hello! 👋 I'm **MeterBot**, your professional energy assistant for Meter Scanner Pro.\n\n"
+                    "I can assist you with:\n"
+                    "• 📷 **Meter Scanning**: How to scan your digital or analog meters.\n"
+                    "• 💰 **Bill Calculation**: Estimating bills based on slab rates.\n"
+                    "• 📊 **Analytics & Export**: Tracking usage patterns and downloading reports.\n"
+                    "• 🔔 **Alerts & Budgets**: Setting thresholds and monthly spending limits.\n\n"
+                    "How can I help you manage your energy consumption today?")
+            
+        elif any(w in msg_en for w in ['who are you','what are you','your name','introduce','about you','what can you do']):
+            r_en = ("I am **MeterBot** 🤖, the dedicated AI assistant for Meter Scanner Pro.\n\n"
+                    "I specialize in assisting you with all features of Meter Scanner Pro, including OCR meter scanning, "
+                    "electricity bill calculation, usage analytics, CSV exports, budget planning, alerts, and troubleshooting "
+                    "camera issues. I am here to help you optimize your utility management and save on your bills.")
+            
+        elif any(w in msg_en for w in ['scan','capture','camera','ocr','take photo','read meter','how to scan','meter reading']):
+            r_en = ("### How to scan your meter: 📷\n\n"
+                    "1. Navigate to the **Dashboard** and click **Scan Meter** (or go to the Scan section).\n"
+                    "2. Grant camera permissions if prompted.\n"
+                    "3. Center your utility meter display inside the alignment frame.\n"
+                    "4. Ensure proper, glare-free lighting for maximum accuracy.\n"
+                    "5. Press **Capture**. Our OCR will automatically extract the reading.\n\n"
+                    "*Note: We support digital, analog, smart, water, and gas meters. Clean the meter glass if it's dirty for better results.*")
+            
+        elif any(w in msg_en for w in ['slab','tariff','per unit','electricity rate','kwh rate','unit rate']):
+            r_en = ("### Current Electricity Slab Rates (INR):\n\n"
+                    "• **0–50 units**: ₹2.50 / unit (Lifeline slab)\n"
+                    "• **51–100 units**: ₹3.50 / unit\n"
+                    "• **101–300 units**: ₹4.50 / unit\n"
+                    "• **301–500 units**: ₹6.50 / unit\n"
+                    "• **500+ units**: ₹8.50 / unit\n\n"
+                    "*Additional fees apply including a 15% fuel surcharge, 18% GST, and ₹25 monthly meter rent. Surcharges vary by season and peak hours.*")
+            
+        elif any(w in msg_en for w in ['bill','calculate','cost','charge','amount','invoice','payment']):
             if len(nums) >= 2:
                 u, rate = float(nums[0]), float(nums[1])
                 energy = u * rate; gst = energy * 0.18; total = energy + gst + 25
-                r = (f'\U0001f4b0 Bill Result\n\n'
-                     f'Units: {u} kWh | Rate: \u20b9{rate}/unit\n'
-                     f'Energy charge : \u20b9{energy:.2f}\n'
-                     f'Meter rent    : \u20b925.00\n'
-                     f'GST (18%%.)   : \u20b9{gst:.2f}\n'
-                     f'Total Bill    : \u20b9{total:.2f}\n\n'
-                     'See Bills page for full slab breakdown!')
+                r_en = (f"### Estimated Bill Calculation\n\n"
+                        f"• **Units Consumed**: {u} kWh\n"
+                        f"• **Rate per Unit**: ₹{rate:.2f}\n"
+                        f"• **Energy Charge**: ₹{energy:.2f}\n"
+                        f"• **Fixed Meter Rent**: ₹25.00\n"
+                        f"• **GST (18%)**: ₹{gst:.2f}\n"
+                        f"**Estimated Total Bill**: **₹{total:.2f}**\n\n"
+                        "Please check the Bills page for a detailed slab-wise breakdown.")
             elif len(nums) == 1:
                 u = float(nums[0])
-                r = (f'Got it \u2014 {u} units! \U0001f4ca\n\n'
-                     f'Share the rate per unit (\u20b9) for the total.\n'
-                     f"Example: '{u} units at \u20b96 per unit'\n\n"
-                     'Or visit Bills page for automatic calculation!')
+                r_en = (f"I have received your units consumption: **{u} kWh**. "
+                        f"To estimate the bill, please specify the rate per unit.\n"
+                        f"Example: *'calculate bill for {u} units at ₹6 per unit'*, or visit the Bills page.")
             else:
-                r = ('I can calculate your electricity bill! \U0001f4b0\n\n'
-                     'Indian electricity slabs:\n'
-                     '\u2022 0\u201350 units \u2192 \u20b92.50/unit\n'
-                     '\u2022 51\u2013100   \u2192 \u20b93.50/unit\n'
-                     '\u2022 101\u2013300  \u2192 \u20b94.50/unit\n'
-                     '\u2022 301\u2013500  \u2192 \u20b96.50/unit\n'
-                     '\u2022 500+        \u2192 \u20b98.50/unit\n\n'
-                     'Tell me your units consumed and I\'ll calculate it!')
-
-        elif any(w in msg for w in ['history','past reading','analytics','trend','graph','monthly','consumption','track','usage']):
-            r = ('\U0001f4ca Reading History and Analytics\n\n'
-                 '\U0001f539 Readings Page \u2192 All past scans with timestamps\n'
-                 '\U0001f539 Dashboard \u2192 6-month usage trend chart\n'
-                 '\U0001f539 Analytics \u2192 Monthly comparisons and peak days\n\n'
-                 'Stats: monthly average, month-on-month change, efficiency score (A+ to C), peak/low days\n\n'
-                 '\U0001f4c1 Export all readings to CSV from the Readings page!')
-
-        elif any(w in msg for w in ['alert','notification','warning','threshold','notify']):
-            r = ('\U0001f514 Smart Alerts\n\n'
-                 'Dashboard \u2192 Alerts to configure:\n\n'
-                 '\u2022 \u26a1 High usage alert\n'
-                 '\u2022 \U0001f4b0 Bill threshold alert\n'
-                 '\u2022 \U0001f4c5 Missed reading reminder\n'
-                 '\u2022 \U0001f527 Maintenance due reminder\n\n'
-                 'Click Add Alert, set type and value, save \u2014 done!')
-
-        elif any(w in msg for w in ['budget','limit','spending','budget planner']):
-            r = ('\U0001f4c5 Budget Planner\n\n'
-                 'Alerts \u2192 Budget Planner to:\n\n'
-                 '\u2022 Set a monthly spending limit\n'
-                 '\u2022 Track estimated current spend\n'
-                 '\u2022 Get alerts near your limit\n'
-                 '\u2022 Compare budget vs actual\n\n'
-                 '\U0001f4a1 Tip: Set 10-15% below last month\'s bill to build savings!')
-
-        elif any(w in msg for w in ['tip','save energy','reduce','saving','efficient','lower bill']):
-            r = ('\U0001f4a1 Energy Saving Tips\n\n'
-                 '\U0001f3e0 Lighting: LED bulbs \u2192 save up to 75%\n'
-                 '\u274a\ufe0f Cooling: Set AC to 24\u00b0C, use fans alongside\n'
-                 '\U0001f50c Standby: Unplug idle devices (saves ~10% of bill)\n'
-                 '\u23f0 Timing: Run heavy loads during off-peak (10PM\u20136AM)\n'
-                 '\U0001f321\ufe0f Insulate: Seal doors and windows\n\n'
-                 'Visit Energy Tips page in the app for personalised advice!')
-
-        elif any(w in msg for w in ['export','download','csv','report','data']):
-            r = ('\U0001f4c1 Exporting Your Data\n\n'
-                 'Readings \u2192 Export to CSV\n\n'
-                 'CSV includes: Reading value (kWh), Timestamp, OCR confidence, Status, Notes\n\n'
-                 'Open in Excel or Google Sheets for custom charts! \U0001f4ca')
-
-        elif any(w in msg for w in ['maintenance','service','repair','schedule']):
-            r = ('\U0001f527 Maintenance Scheduling\n\n'
-                 'Settings \u2192 Maintenance to:\n\n'
-                 '\u2022 Schedule meter inspections\n'
-                 '\u2022 Log completed maintenance\n'
-                 '\u2022 Get reminders before due dates\n'
-                 '\u2022 Track history per meter\n\n'
-                 'Regular maintenance ensures accurate readings! \u2705')
-
-        elif any(w in msg for w in ['complaint','support','contact','dispute','wrong reading']):
-            r = ('\U0001f4de Support and Complaints\n\n'
-                 'Settings \u2192 Complaints\n\n'
-                 '\u2022 Report wrong readings or billing disputes\n'
-                 '\u2022 Attach photos as evidence\n'
-                 '\u2022 Set priority and track status\n\n'
-                 'Email: support@meterscanner.com\n'
-                 'Helpline: 1800-123-4567 (24/7 toll-free)')
-
-        elif any(w in msg for w in ['login','register','sign up','account','profile','password','google','logout']):
-            r = ('\U0001f464 Account and Profile\n\n'
-                 'Login options:\n'
-                 '\u2022 \U0001f511 Username and password\n'
-                 '\u2022 \U0001f535 Google OAuth (one-click)\n\n'
-                 'Profile (Settings \u2192 Profile): Update name, phone, address, change password\n\n'
-                 'Google Login: Click \'Continue with Google\' on the login page.\n'
-                 'Account auto-created from your Google email! \U0001f389\n\n'
-                 'New user? Click Register \u2014 it\'s free!')
-
-        elif any(w in msg for w in ['dashboard','overview','summary']):
-            r = ('\U0001f4ca Dashboard Overview\n\n'
-                 '\U0001f539 Average reading and scan count\n'
-                 '\U0001f539 Estimated bill\n'
-                 '\U0001f539 Usage change vs last month\n'
-                 '\U0001f539 Efficiency score (A+ to C)\n'
-                 '\U0001f539 Last 10 readings list\n'
-                 '\U0001f539 6-month trend chart\n\n'
-                 'Navigate: Scan, Readings, Alerts, Analytics from top navbar \U0001f680')
-
-        elif any(w in msg for w in ['blurry','blur','not detected','dark','glare','problem','issue','cannot scan','trouble']):
-            r = ('\U0001f527 Scanning Troubleshooting\n\n'
-                 '\U0001f4f7 Blurry? Clean lens, hold steady, stay 15-25cm away\n'
-                 '\U0001f522 Not detected? All digits visible, avoid shadows\n'
-                 '\U0001f311 Too dark? Enable torch before scanning\n'
-                 '\u2600\ufe0f Glare? Tilt phone slightly to reduce reflection\n\n'
-                 'Still stuck? Use Manual Entry on the scan screen!')
-
-        elif any(w in msg for w in ['thank','thanks','great','awesome','nice','helpful']):
-            r = 'You\'re welcome! \U0001f60a Happy to help anytime. \u26a1'
-
-        elif any(w in msg for w in ['bye','goodbye','see you']):
-            r = 'Goodbye! \U0001f44b Keep tracking your readings and saving energy! \u26a1'
-
+                r_en = ("I can help calculate your estimated electricity bill. "
+                        "Please provide your units consumed and the unit rate (e.g. *'calculate bill for 150 units at ₹4.5'*) "
+                        "or visit the Bills section to generate an official bill from your scanned readings.")
+            
+        elif any(w in msg_en for w in ['history','past reading','analytics','trend','graph','monthly','consumption','track','usage']):
+            r_en = ("### Usage History & Analytics\n\n"
+                    "You can view your history and analytics across the application:\n"
+                    "• **Readings Page**: View all historical meter scans, OCR confidence scores, and notes.\n"
+                    "• **Dashboard**: See your 6-month usage trends and estimated current month bill.\n"
+                    "• **Analytics Page**: Comparative analysis showing peak days and efficiency scores (A+ to C).\n"
+                    "• **CSV Export**: Download your entire history in Excel-compatible format from the Readings page.")
+            
+        elif any(w in msg_en for w in ['alert','notification','warning','threshold','notify']):
+            r_en = ("### Usage Alerts & Reminders\n\n"
+                    "Go to the Alerts page to configure warning notifications:\n"
+                    "• **High Usage**: Alert when consumption exceeds your target.\n"
+                    "• **Bill Threshold**: Alert when estimated bill amount exceeds a budget.\n"
+                    "• **Missed Scans**: Get reminders to capture readings regularly.")
+            
+        elif any(w in msg_en for w in ['budget','limit','spending','budget planner']):
+            r_en = ("### Budget Planner\n\n"
+                    "Set monthly spending limits in the **Budget Planner** (under the Alerts page). "
+                    "It tracks your estimated daily spend vs target budget and sends warnings before you exceed your limit. "
+                    "Setting a budget 10% lower than your average bill is a proven way to reduce energy waste.")
+            
+        elif any(w in msg_en for w in ['tip','save energy','reduce','saving','efficient','lower bill']):
+            r_en = ("### Professional Energy Saving Tips:\n\n"
+                    "1. **Lighting**: Switch to LED bulbs to save up to 75% energy compared to incandescent lights.\n"
+                    "2. **Thermostat**: Set your air conditioner to 24°C. Every degree lower increases consumption by 6%.\n"
+                    "3. **Phantom Load**: Unplug electronics and chargers when not in use to save up to 10% on standby energy.\n"
+                    "4. **Load Management**: Run high-consumption appliances (washing machines, water heaters) during off-peak hours (10 PM – 6 AM).")
+            
+        elif any(w in msg_en for w in ['export','download','csv','report','data']):
+            r_en = ("### Data Export\n\n"
+                    "You can download your meter reading history as a CSV file. Go to the **Readings** page, click the "
+                    "**Export to CSV** button, and import it into Excel or Google Sheets for custom analysis.")
+            
+        elif any(w in msg_en for w in ['maintenance','service','repair','schedule']):
+            r_en = ("### Meter Maintenance\n\n"
+                    "Regular inspection prevents errors. In the **Settings -> Maintenance** tab, you can schedule meter "
+                    "inspections, log completed services, and receive alerts when maintenance is due.")
+            
+        elif any(w in msg_en for w in ['complaint','support','contact','dispute','wrong reading']):
+            r_en = ("### Support & Complaints\n\n"
+                    "If you notice a billing discrepancy or scanning issue, you can file a formal complaint under "
+                    "**Settings -> Complaints** or contact support:\n"
+                    "• **Email**: support@meterscanner.com\n"
+                    "• **Helpline**: 1800-123-4567 (Toll-Free, 24/7)")
+            
+        elif any(w in msg_en for w in ['login','register','sign up','account','profile','password','google','logout']):
+            r_en = ("### Account & Access Management\n\n"
+                    "We support login via standard username/password or Google OAuth. "
+                    "You can update your personal profile, phone number, address, and change passwords in "
+                    "**Settings -> Profile**. To enable Google Login, configure client IDs in the environment.")
+            
+        elif any(w in msg_en for w in ['dashboard','overview','summary']):
+            r_en = ("### Dashboard Overview\n\n"
+                    "The Dashboard is your main control center. It shows units consumed, bill projections, "
+                    "efficiency ratings, 6-month visual consumption trends, and quick access buttons to scan, calculate bills, or plan budgets.")
+            
+        elif any(w in msg_en for w in ['blurry','blur','not detected','dark','glare','problem','issue','cannot scan','trouble']):
+            r_en = ("### Scanning & OCR Troubleshooting\n\n"
+                    "• **Blurry Image**: Clean your camera lens, hold the phone steady, and maintain a distance of 15-25cm.\n"
+                    "• **Poor Lighting**: Turn on your device flash/torch before capturing.\n"
+                    "• **Reflection/Glare**: Tilt the camera slightly to avoid direct light reflection.\n"
+                    "• **Alternative**: If automatic OCR fails, you can use the **Manual Entry** option on the scanning screen.")
+            
+        elif any(w in msg_en for w in ['thank','thanks','great','awesome','nice','helpful']):
+            r_en = "You are very welcome! 😊 I am glad I could assist you. Let me know if you need anything else."
+            
+        elif any(w in msg_en for w in ['bye','goodbye','see you']):
+            r_en = "Thank you for using Meter Scanner Pro. Goodbye, and have a great day! ⚡"
+            
         elif len(nums) >= 2:
             u, rate = float(nums[0]), float(nums[1])
             energy = u * rate; gst = energy * 0.18; total = energy + gst + 25
-            r = (f'\U0001f4ca Detected {u} units at \u20b9{rate}/unit\n\n'
-                 f'Energy \u20b9{energy:.2f} + GST \u20b9{gst:.2f} + Rent \u20b925\n'
-                 f'Total: \u20b9{total:.2f}\n\nVisit Bills section for full breakdown!')
-
+            r_en = (f"### Billing Projection\n\n"
+                    f"Consumption of **{u} units** at a rate of **₹{rate:.2f}/unit** results in an estimated energy charge of "
+                    f"₹{energy:.2f}. Adding fixed rent (₹25) and GST (₹{gst:.2f}) brings the total bill estimate to **₹{total:.2f}**.")
+            
         elif len(nums) == 1:
             u = float(nums[0])
-            level = 'high \U0001f534' if u > 500 else 'moderate \U0001f7e1' if u > 200 else 'low \U0001f7e2'
-            r = (f'Reading: {u} kWh \u2014 Level: {level}\n\n'
-                 f"Say 'calculate bill for {u} units' to get your estimate!")
-
+            r_en = (f"Recognized consumption of **{u} kWh**. To calculate the total cost, please mention the tariff rate per unit, "
+                    f"or say *'calculate bill for {u} units'*.")
+            
         else:
-            r = ('I specialise in Meter Scanner Pro topics only. \U0001f916\n\n'
-                 'Try asking:\n'
-                 '\u2022 \'How do I scan my meter?\'\n'
-                 '\u2022 \'Calculate my bill for 300 units\'\n'
-                 '\u2022 \'How to set up alerts?\'\n'
-                 '\u2022 \'Show energy saving tips\'\n'
-                 '\u2022 \'How to export my data?\'')
-
+            # General professional default response
+            r_en = ("I am MeterBot 🤖, your utility management assistant. I specialize in answering questions about: "
+                    "meter scanning (OCR), bill calculations, consumption history, energy-saving recommendations, and alerts. "
+                    "Could you please specify how I can assist you with your utility management today?")
+            
+        # Translate response back to original language (if not English and translation worked)
+        if detected_lang and detected_lang not in ['en', 'english']:
+            try:
+                from deep_translator import GoogleTranslator
+                r = GoogleTranslator(source='en', target=detected_lang).translate(r_en)
+            except Exception as e:
+                logger.error(f"Failed to translate response back to {detected_lang}: {e}")
+                r = r_en
+        else:
+            r = r_en
+            
         return jsonify({'response': r, 'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')})
+        
     except Exception as e:
-        app.logger.error(f'Chat error: {e}')
-        return jsonify({'response': 'Something went wrong. Please try again. \U0001f605', 'error': str(e)}), 500
+        logger.error(f'Chat error: {e}')
+        return jsonify({'response': 'An error occurred. Please try again.', 'error': str(e)}), 500
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -724,7 +749,7 @@ def login():
         if conn is not None:
             try:
                 c = conn.cursor()
-                c.execute("SELECT * FROM users WHERE username = ?", (username,))
+                c.execute("SELECT * FROM users WHERE username = ? OR email = ?", (username, username))
                 user = c.fetchone()
                 
                 if user and check_password_hash(user['password'], password):
@@ -742,7 +767,7 @@ def login():
                     flash('Logged in successfully!', 'success')
                     return redirect(url_for('dashboard'))
                 else:
-                    flash('Invalid username or password', 'error')
+                    flash('Invalid username/email or password', 'error')
             finally:
                 conn.close()
     
@@ -974,7 +999,7 @@ def dashboard():
         
         # Get recent readings for history
         c.execute("""
-            SELECT reading_value, confidence, status, notes, timestamp
+            SELECT id, reading_value, confidence, status, notes, timestamp, image_path
             FROM readings 
             WHERE user_id = ? 
             ORDER BY timestamp DESC 
@@ -1299,7 +1324,11 @@ def extract_meter_number(image, debug_mode=False):
                     h < img_height * 0.5 and w < img_width * 0.3):  # Maximum size limits
                     digit_contours.append((x, y, w, h, area, aspect_ratio))
             
-            # Sort contours left to right
+            # Sort contours by area descending to keep the most significant (largest) candidate digits,
+            # up to a maximum of 8 contours, then sort them left-to-right to prevent performance explosion on noise.
+            if len(digit_contours) > 8:
+                digit_contours.sort(key=lambda x: x[4], reverse=True)
+                digit_contours = digit_contours[:8]
             digit_contours.sort(key=lambda x: x[0])
             
             # Extract digits using multiple OCR approaches
@@ -1320,20 +1349,16 @@ def extract_meter_number(image, debug_mode=False):
                 # Approach 2: Inverted
                 roi_inverted = cv2.bitwise_not(roi_thresh)
                 
-                # Approach 3: Dilated
-                kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
-                roi_dilated = cv2.dilate(roi_thresh, kernel, iterations=1)
+
                 
-                for roi_version in [roi_thresh, roi_inverted, roi_dilated]:
+                for roi_version in [roi_thresh, roi_inverted]:
                     # Add padding
                     padded = cv2.copyMakeBorder(roi_version, 10, 10, 10, 10, 
                                               cv2.BORDER_CONSTANT, value=255 if roi_version is roi_inverted else 0)
                     
-                    # Multiple Tesseract configurations
+                    # Single character PSM is best suited for individual cropped digits
                     configs = [
-                        r'--oem 3 --psm 10 -c tessedit_char_whitelist=0123456789',
-                        r'--oem 3 --psm 7 -c tessedit_char_whitelist=0123456789',
-                        r'--oem 3 --psm 8 -c tessedit_char_whitelist=0123456789'
+                        r'--oem 3 --psm 10 -c tessedit_char_whitelist=0123456789'
                     ]
                     
                     for config in configs:
@@ -1363,14 +1388,27 @@ def extract_meter_number(image, debug_mode=False):
             # Calculate method confidence
             method_avg_conf = sum(method_confidences) / len(method_confidences) if method_confidences else 0
             
-            # Update best result if this method is better
-            if len(method_result) >= 3 and method_avg_conf > best_confidence:
-                best_result = method_result
-                best_confidence = method_avg_conf
-                best_method = method_name
+            # Update best result if this method is better (longer sequence, or same length with higher confidence)
+            if len(method_result) >= 2:
+                if (not best_result or 
+                    len(method_result) > len(best_result) or 
+                    (len(method_result) == len(best_result) and method_avg_conf > best_confidence)):
+                    best_result = method_result
+                    best_confidence = method_avg_conf
+                    best_method = method_name
         
-        # Post-processing: Validate and clean the result
-                return best_result
+        # If we successfully extracted digit contours, return the best candidate
+        if best_result:
+            if debug_mode:
+                debug_info = {
+                    'detected_number': best_result,
+                    'confidence': best_confidence,
+                    'method_used': best_method,
+                    'num_digits': len(best_result),
+                    'validation': 'success'
+                }
+                return best_result, debug_info, processed_images
+            return best_result
         
         # Fallback 1: Try whole image OCR with multiple PSM modes
         try:
@@ -1390,9 +1428,16 @@ def extract_meter_number(image, debug_mode=False):
                 if nums:
                     # Take the longest numeric string found
                     fallback_result = max(nums, key=len)
-                    if len(fallback_result) >= 3:
+                    if len(fallback_result) >= 2:
                         if debug_mode:
-                            return fallback_result, {'method': f'fallback_psm_{psm}'}, {}
+                            fallback_info = {
+                                'detected_number': fallback_result,
+                                'confidence': 0.70,
+                                'method_used': f'fallback_psm_{psm}',
+                                'num_digits': len(fallback_result),
+                                'validation': 'success'
+                            }
+                            return fallback_result, fallback_info, processed_images
                         return fallback_result
         except Exception as e:
             logger.error(f'Fallback 1 failed: {e}')

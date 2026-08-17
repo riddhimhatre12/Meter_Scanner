@@ -315,6 +315,7 @@
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
+                                        <th>Image</th>
                                         <th>Reading Value</th>
                                         <th>Confidence</th>
                                         <th>Status</th>
@@ -325,6 +326,17 @@
                                 <tbody>
                                     {% for reading in recent_readings %}
                                     <tr>
+                                        <td>
+                                            {% if reading.image_path %}
+                                                <img src="{{ url_for('static', filename='uploads/' + reading.image_path) }}" 
+                                                     class="rounded img-thumbnail dashboard-thumbnail" 
+                                                     style="width: 45px; height: 45px; object-fit: cover; cursor: zoom-in;"
+                                                     data-image="{{ reading.image_path }}"
+                                                     alt="Meter Thumbnail">
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
                                         <td><strong>{{ reading.reading_value }}</strong></td>
                                         <td>
                                             {% if reading.confidence %}
@@ -599,6 +611,20 @@
     </div>
 </div>
 
+<!-- Image Preview Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true" style="z-index: 1070;">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content bg-transparent border-0">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0 text-center">
+                <img id="previewImage" src="" class="img-fluid shadow-lg rounded" style="max-height: 85vh;" alt="Meter Reading">
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 // Apply progress bar widths from data-attributes (prevents CSS lint errors)
@@ -607,6 +633,21 @@ document.addEventListener('DOMContentLoaded', function() {
         if (bar.dataset.width) {
             bar.style.width = bar.dataset.width;
         }
+    });
+
+    // Handle full-size image preview for dashboard thumbnails
+    const showPreview = (filename) => {
+        const previewImg = document.getElementById('previewImage');
+        previewImg.src = '{{ url_for("static", filename="uploads/") }}' + filename;
+        const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+        modal.show();
+    };
+
+    document.querySelectorAll('.dashboard-thumbnail').forEach(img => {
+        img.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPreview(img.dataset.image);
+        });
     });
 });
 
