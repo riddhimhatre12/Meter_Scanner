@@ -2095,6 +2095,23 @@ def analytics():
             conn.close()
     return render_template('analytics.html')
 
+@app.route('/bill')
+@login_required
+def bill():
+    """Bill page - redirects to latest generated bill or dashboard"""
+    conn = get_db_connection()
+    if conn is not None:
+        try:
+            c = conn.cursor()
+            c.execute("SELECT id FROM readings WHERE user_id = ? ORDER BY timestamp DESC LIMIT 1", (current_user.id,))
+            latest = c.fetchone()
+            if latest:
+                return redirect(url_for('generate_bill', reading_id=latest['id']))
+        finally:
+            conn.close()
+    flash('No meter readings found yet. Please scan a meter first!', 'info')
+    return redirect(url_for('dashboard'))
+
 @app.route('/generate_bill/<int:reading_id>')
 def generate_bill(reading_id):
     conn = get_db_connection()

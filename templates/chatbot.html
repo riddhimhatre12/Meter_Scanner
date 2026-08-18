@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MeterBot — Smart Energy Assistant</title>
+    <title>MeterBot — Smart Energy Assistant Pro</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -12,14 +12,14 @@
             --accent:        #4f8ef7;
             --accent-glow:   rgba(79, 142, 247, 0.4);
             --accent2:       #7c5af7;
-            --bg:            #0d1322;
-            --surface:       #151d30;
-            --surface2:      #1c2742;
+            --bg:            #0a0f1d;
+            --surface:       #131a2e;
+            --surface2:      #1a243d;
             --border:        rgba(79, 142, 247, 0.22);
             --text:          #e6edf8;
             --text-secondary:#94a3b8;
             --muted:         #64748b;
-            --bubble-bot:    #18233c;
+            --bubble-bot:    #162138;
             --bubble-user:   linear-gradient(135deg, #3b82f6, #7c3aed);
             --radius-lg:     18px;
             --radius-md:     12px;
@@ -52,8 +52,8 @@
         .chat-header {
             display: flex;
             align-items: center;
-            gap: 0.8rem;
-            padding: 0.85rem 1.1rem;
+            gap: 0.75rem;
+            padding: 0.85rem 1rem;
             background: var(--surface);
             border-bottom: 1px solid var(--border);
             flex-shrink: 0;
@@ -87,16 +87,35 @@
             0%, 100% { transform: scale(1); opacity: 1; }
             50% { transform: scale(1.2); opacity: 0.7; }
         }
-        .powered {
-            font-size: 0.65rem;
-            font-weight: 600;
-            color: var(--accent);
-            background: rgba(79, 142, 247, 0.12);
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .header-btn {
+            background: var(--surface2);
             border: 1px solid var(--border);
-            padding: 0.25rem 0.6rem;
-            border-radius: 20px;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
+            color: var(--text-secondary);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .header-btn:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+            transform: scale(1.08);
+        }
+        .header-btn.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
         }
 
         /* ── Messages Area ── */
@@ -145,7 +164,7 @@
         .msg-meta {
             display: flex;
             flex-direction: column;
-            max-width: 86%;
+            max-width: 88%;
         }
         .msg-meta.user-meta { align-items: flex-end; }
 
@@ -176,7 +195,7 @@
             padding: 0 0.25rem;
         }
 
-        /* ── Markdown Formatted Elements inside Messages ── */
+        /* ── Markdown Formatted Elements ── */
         .md-heading {
             font-size: 0.95rem;
             font-weight: 700;
@@ -216,29 +235,70 @@
             line-height: 1;
             flex-shrink: 0;
         }
+
+        /* Interactive Action Buttons inside Bot Messages */
+        .action-card-widget {
+            background: rgba(79, 142, 247, 0.1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.75rem;
+            margin-top: 0.75rem;
+        }
+        .action-card-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
         .md-action-btn {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: rgba(79, 142, 247, 0.15);
-            border: 1px solid var(--border);
-            color: #60a5fa !important;
-            padding: 0.3rem 0.75rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #ffffff !important;
+            padding: 0.4rem 0.85rem;
             border-radius: var(--radius-md);
-            font-size: 0.775rem;
+            font-size: 0.8rem;
             font-weight: 600;
             text-decoration: none;
-            margin-top: 0.4rem;
+            box-shadow: 0 2px 8px var(--accent-glow);
             transition: all 0.2s ease;
         }
         .md-action-btn:hover {
-            background: var(--accent);
-            color: #fff !important;
             transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(79, 142, 247, 0.6);
         }
-        .md-spacer {
-            height: 0.5rem;
+
+        /* Mini Estimator Card Widget */
+        .mini-calc-card {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.75rem;
+            margin-top: 0.65rem;
         }
+        .mini-calc-input {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: var(--radius-sm);
+            padding: 0.4rem 0.6rem;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+        .mini-calc-res {
+            font-size: 0.825rem;
+            font-weight: 700;
+            color: #10b981;
+            margin-top: 0.4rem;
+        }
+
+        .md-spacer { height: 0.5rem; }
         .bubble strong { color: #60a5fa; font-weight: 700; }
         .bubble.user strong { color: #ffffff; }
 
@@ -315,7 +375,7 @@
         .input-row {
             display: flex;
             align-items: center;
-            gap: 0.65rem;
+            gap: 0.55rem;
             padding: 0.75rem 0.9rem;
             background: var(--surface);
             border-top: 1px solid var(--border);
@@ -334,6 +394,33 @@
         }
         #msg-input::placeholder { color: var(--muted); }
         #msg-input:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+
+        .mic-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .mic-btn:hover { color: var(--accent); border-color: var(--accent); }
+        .mic-btn.listening {
+            background: #ef4444;
+            color: #fff;
+            border-color: #ef4444;
+            animation: pulse-mic 1s infinite alternate;
+        }
+        @keyframes pulse-mic {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+            100% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+        }
 
         #send-btn {
             width: 40px;
@@ -364,7 +451,14 @@
         <h6>MeterBot</h6>
         <span><span class="online-dot"></span>Online · Meter Scanner Pro</span>
     </div>
-    <div class="powered">AI Powered</div>
+    <div class="header-controls">
+        <button id="speech-toggle" class="header-btn" title="Toggle Voice Output (Read Aloud)" onclick="toggleVoiceOutput()">
+            <i id="speech-icon" class="bi bi-volume-mute"></i>
+        </button>
+        <button class="header-btn" title="Clear Chat History" onclick="clearHistory()">
+            <i class="bi bi-trash"></i>
+        </button>
+    </div>
 </div>
 
 <!-- Messages Container -->
@@ -380,8 +474,12 @@
                 <div class="md-list-item"><span class="md-bullet">•</span><span>💰 <strong>Bill Calculations</strong> &amp; Electricity Slab Rates</span></div>
                 <div class="md-list-item"><span class="md-bullet">•</span><span>📊 <strong>Usage History</strong> &amp; Energy Analytics</span></div>
                 <div class="md-list-item"><span class="md-bullet">•</span><span>🔔 <strong>Budget Alerts</strong> &amp; Saving Recommendations</span></div>
-                <div class="md-spacer"></div>
-                What would you like help with today?
+                
+                <div class="action-card-widget">
+                    <div class="action-card-title"><i class="bi bi-lightning-charge-fill text-warning"></i> Quick Actions</div>
+                    <a href="/capture" target="_parent" class="md-action-btn"><i class="bi bi-camera-fill me-1"></i> Open Meter Scanner</a>
+                    <a href="/bill" target="_parent" class="md-action-btn" style="background:var(--surface2);border:1px solid var(--border);color:var(--text) !important;"><i class="bi bi-calculator me-1"></i> Bill Calculator</a>
+                </div>
             </div>
             <div class="msg-time">Just now</div>
         </div>
@@ -400,7 +498,7 @@
 
 <!-- Quick Action Suggestion Chips -->
 <div class="quick-container" id="quick-wrap">
-    <div class="quick-scroll">
+    <div class="quick-scroll" id="chips-scroll">
         <button class="chip" onclick="sendChip('How to scan?')">📷 How to scan?</button>
         <button class="chip" onclick="sendChip('Calculate bill')">💰 Calculate bill</button>
         <button class="chip" onclick="sendChip('Electricity rates')">⚡ Electricity rates</button>
@@ -412,6 +510,9 @@
 
 <!-- Input Controls -->
 <div class="input-row">
+    <button id="mic-btn" class="mic-btn" title="Voice Input (Speech-to-Text)" onclick="toggleVoiceInput()">
+        <i class="bi bi-mic-fill"></i>
+    </button>
     <input id="msg-input" type="text" placeholder="Ask MeterBot anything about your meter…" autocomplete="off">
     <button id="send-btn" onclick="send()"><i class="bi bi-send-fill"></i></button>
 </div>
@@ -421,6 +522,29 @@ const messagesEl = document.getElementById('chat-messages');
 const typingEl   = document.getElementById('typing');
 const inputEl    = document.getElementById('msg-input');
 const sendBtn    = document.getElementById('send-btn');
+const micBtn     = document.getElementById('mic-btn');
+
+let voiceOutputEnabled = false;
+let recognition = null;
+
+// Synthesize soft audio chime on message
+function playChime(freq = 520) {
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(0.04, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.15);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.15);
+    } catch(e) {}
+}
 
 function now() {
     return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -430,13 +554,12 @@ function now() {
 function renderMd(text) {
     if (!text) return '';
 
-    // Sanitize basic tags first
     let str = text
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
 
-    // Headings (### or ##)
+    // Headings
     str = str.replace(/^### (.*$)/gim, '<h5 class="md-heading">$1</h5>');
     str = str.replace(/^## (.*$)/gim, '<h4 class="md-heading">$1</h4>');
 
@@ -447,20 +570,17 @@ function renderMd(text) {
     // Action Links [Text](/url)
     str = str.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_parent" class="md-action-btn">$1</a>');
 
-    // Split lines for structured list rendering
     const lines = str.split('\n');
     const processedLines = [];
 
     for (let line of lines) {
         let trimmed = line.trim();
-        // Numbered list item (1. , 2. )
         const numMatch = trimmed.match(/^(\d+)\.\s+(.*$)/);
         if (numMatch) {
             processedLines.push(`<div class="md-list-item"><span class="md-num">${numMatch[1]}</span><span>${numMatch[2]}</span></div>`);
             continue;
         }
 
-        // Bullet point item (• , - , * )
         const bulletMatch = trimmed.match(/^[•\-\*]\s+(.*$)/);
         if (bulletMatch) {
             processedLines.push(`<div class="md-list-item"><span class="md-bullet">•</span><span>${bulletMatch[1]}</span></div>`);
@@ -471,12 +591,47 @@ function renderMd(text) {
     }
 
     let resultHtml = processedLines.join('\n');
-    
-    // Replace double newlines with spacer, single newline with <br>
     resultHtml = resultHtml.replace(/\n\n/g, '<div class="md-spacer"></div>');
     resultHtml = resultHtml.replace(/\n/g, '<br>');
 
+    // Insert interactive widgets if keywords match
+    const lowerText = text.toLowerCase();
+    if (lowerText.includes('scan') || lowerText.includes('camera') || lowerText.includes('ocr')) {
+        resultHtml += `
+            <div class="action-card-widget">
+                <div class="action-card-title"><i class="bi bi-camera-fill text-primary"></i> Scanner Action</div>
+                <a href="/capture" target="_parent" class="md-action-btn"><i class="bi bi-camera me-1"></i> Launch Meter Scanner Now</a>
+            </div>
+        `;
+    } else if (lowerText.includes('bill') || lowerText.includes('units') || lowerText.includes('rate')) {
+        resultHtml += `
+            <div class="mini-calc-card">
+                <div class="action-card-title"><i class="bi bi-calculator-fill text-success"></i> Instant Bill Calculator</div>
+                <input type="number" id="mini-u-${Date.now()}" class="mini-calc-input" placeholder="Enter units (e.g. 150)" onkeyup="calcMiniBill(this)">
+                <div class="mini-calc-res" id="mini-res-${Date.now()}">Result: Enter units above</div>
+                <a href="/bill" target="_parent" class="md-action-btn mt-2" style="background:var(--surface);border:1px solid var(--border);color:var(--text) !important;"><i class="bi bi-receipt me-1"></i> View Full Bill Breakup</a>
+            </div>
+        `;
+    }
+
     return resultHtml;
+}
+
+function calcMiniBill(input) {
+    const units = parseFloat(input.value) || 0;
+    const resDiv = input.nextElementSibling;
+    if (units <= 0) {
+        resDiv.textContent = 'Result: Enter units above';
+        return;
+    }
+    let cost = 0;
+    if (units <= 50) cost = units * 2.5;
+    else if (units <= 100) cost = 50 * 2.5 + (units - 50) * 3.5;
+    else if (units <= 300) cost = 50 * 2.5 + 50 * 3.5 + (units - 100) * 4.5;
+    else cost = 50 * 2.5 + 50 * 3.5 + 200 * 4.5 + (units - 300) * 6.5;
+    
+    const total = cost + (cost * 0.18) + 25;
+    resDiv.textContent = `Est. Total: ₹${total.toFixed(2)} (${units} units + GST & Rent)`;
 }
 
 function addMsg(text, isUser) {
@@ -509,9 +664,20 @@ function addMsg(text, isUser) {
         row.appendChild(av);
     }
 
-    /* Insert before typing indicator */
     messagesEl.insertBefore(row, typingEl);
     messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    playChime(isUser ? 640 : 480);
+
+    // Speak bot message if voice output is active
+    if (!isUser && voiceOutputEnabled && window.speechSynthesis) {
+        try {
+            const cleanSpeechText = text.replace(/[*#]/g, '');
+            const utter = new SpeechSynthesisUtterance(cleanSpeechText);
+            utter.rate = 1.0;
+            window.speechSynthesis.speak(utter);
+        } catch(e) {}
+    }
 }
 
 function setLoading(v) {
@@ -539,6 +705,7 @@ async function send() {
         setTimeout(() => {
             setLoading(false);
             addMsg(data.response, false);
+            updateDynamicChips(text);
         }, 350);
     } catch (e) {
         setLoading(false);
@@ -548,9 +715,91 @@ async function send() {
     }
 }
 
+function updateDynamicChips(query) {
+    const chipsScroll = document.getElementById('chips-scroll');
+    if (!chipsScroll) return;
+    const q = query.toLowerCase();
+    let suggestions = [];
+    if (q.includes('scan')) {
+        suggestions = ['📷 Open Scanner', '💡 Low light tips', '💰 Estimate bill'];
+    } else if (q.includes('bill')) {
+        suggestions = ['⚡ Slab rates', '📊 Usage history', '🔔 Set budget alert'];
+    } else {
+        suggestions = ['📷 How to scan?', '💰 Calculate bill', '⚡ Slab rates', '💡 Saving tips'];
+    }
+
+    chipsScroll.innerHTML = suggestions.map(s => `<button class="chip" onclick="sendChip('${s}')">${s}</button>`).join('');
+}
+
 function sendChip(text) {
     inputEl.value = text;
     send();
+}
+
+function toggleVoiceOutput() {
+    voiceOutputEnabled = !voiceOutputEnabled;
+    const speechIcon = document.getElementById('speech-icon');
+    const speechBtn = document.getElementById('speech-toggle');
+    if (voiceOutputEnabled) {
+        speechIcon.className = 'bi bi-volume-up-fill';
+        speechBtn.classList.add('active');
+    } else {
+        speechIcon.className = 'bi bi-volume-mute';
+        speechBtn.classList.remove('active');
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
+    }
+}
+
+function toggleVoiceInput() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        alert('Voice input is not supported in this browser. Try Google Chrome or Edge.');
+        return;
+    }
+    
+    if (recognition) {
+        recognition.stop();
+        recognition = null;
+        micBtn.classList.remove('listening');
+        return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+
+    recognition.onstart = function() {
+        micBtn.classList.add('listening');
+    };
+
+    recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        inputEl.value = transcript;
+        micBtn.classList.remove('listening');
+        recognition = null;
+        send();
+    };
+
+    recognition.onerror = function() {
+        micBtn.classList.remove('listening');
+        recognition = null;
+    };
+
+    recognition.onend = function() {
+        micBtn.classList.remove('listening');
+        recognition = null;
+    };
+
+    recognition.start();
+}
+
+function clearHistory() {
+    if (confirm('Clear chat history?')) {
+        const welcome = document.getElementById('welcome-row');
+        messagesEl.innerHTML = '';
+        if (welcome) messagesEl.appendChild(welcome);
+        messagesEl.appendChild(typingEl);
+    }
 }
 
 inputEl.addEventListener('keydown', e => {
