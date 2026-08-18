@@ -1720,10 +1720,9 @@ def take_photo():
             logger.error("take_photo: camera not opened")
             return jsonify({'success': False, 'error': 'Could not access camera'})
         
-        # Capture multiple frames and pick the sharpest
-        best_frame = None
-        best_focus = -1.0
-        capture_count = 5
+        # Capture multiple frames and pick sharpest frame candidates
+        frames_captured = []
+        capture_count = 8
         
         with camera_lock:
             for _ in range(3): # Clear buffer
@@ -1732,19 +1731,33 @@ def take_photo():
             for _ in range(capture_count):
                 success, frm = camera.read()
                 if not success:
-                    time.sleep(0.05)
+                    time.sleep(0.04)
                     continue
                 gray = cv2.cvtColor(frm, cv2.COLOR_BGR2GRAY)
                 focus = cv2.Laplacian(gray, cv2.CV_64F).var()
-                if focus > best_focus:
-                    best_focus = focus
-                    best_frame = frm
+                frames_captured.append((focus, frm))
                 time.sleep(0.03)
 
-        if best_frame is None:
+        if not frames_captured:
             logger.warning("take_photo: no clear frame captured")
             return jsonify({'success': False, 'error': 'Failed to capture a clear frame'})
         
+        # Sort frames by focus (sharpness) descending
+        frames_captured.sort(key=lambda item: item[0], reverse=True)
+        
+        # Run OCR engine on top 3 sharpest frames until a valid reading is extracted
+        best_frame = frames_captured[0][1]
+        ocr_result = None
+        for focus, frm in frames_captured[:3]:
+            res = extract_meter_number(frm, debug_mode=False)
+            if res:
+                ocr_result = res
+                best_frame = frm
+                break
+        
+        if ocr_result is None:
+            ocr_result = extract_meter_number(best_frame, debug_mode=False)
+            
         frame = best_frame
         
         # Save the original image
@@ -1757,9 +1770,6 @@ def take_photo():
         
         # Save original image
         cv2.imwrite(os.path.join(app.root_path, filepath), frame)
-        
-        # Process the image with unified return type handling
-        ocr_result = extract_meter_number(frame, debug_mode=False)
         
         # Unified handling for result (whether it is a string or dictionary)
         sanitized_value = None
@@ -1778,8 +1788,8 @@ def take_photo():
         elif isinstance(ocr_result, str):
             # Simple string match from extract_meter_number
             sanitized_value = re.sub(r"\D", "", ocr_result)
-            conf = 75.0 if len(sanitized_value) >= 4 else 55.0  # Estimated confidence for simple extraction
-            status_flag = 'auto' if len(sanitized_value) >= 4 else 'review'
+            conf = 85.0 if 3 <= len(sanitized_value) <= 7 else 60.0
+            status_flag = 'auto' if 3 <= len(sanitized_value) <= 7 else 'review'
             response_data = {
                 'success': True,
                 'image_path': filename,
@@ -1788,7 +1798,6 @@ def take_photo():
                 'message': 'Reading extracted successfully'
             }
         elif isinstance(ocr_result, dict):
-            # Complex result dictionary (if I update extract_meter_number to return dict)
             sanitized_value = ocr_result.get('value')
             conf = float(ocr_result.get('confidence') or 0)
             status_flag = ocr_result.get('status', 'review')
@@ -1825,6 +1834,34 @@ def take_photo():
         
     except Exception as e:
         logger.exception("Photo capture error")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/update_last_reading', methods=['POST'])
+@login_required
+def update_last_reading():
+    try:
+        data = request.get_json() or {}
+        new_val = data.get('reading_value')
+        image_path = data.get('image_path')
+        if not new_val or not image_path:
+            return jsonify({'success': False, 'error': 'Missing parameters'})
+            
+        clean_val = re.sub(r'\D', '', str(new_val))
+        conn = get_db_connection()
+        if conn is not None:
+            try:
+                c = conn.cursor()
+                c.execute("""
+                    UPDATE readings 
+                    SET reading_value = ?, status = 'verified'
+                    WHERE user_id = ? AND image_path = ?
+                """, (clean_val, current_user.id, image_path))
+                conn.commit()
+                return jsonify({'success': True, 'reading_value': clean_val})
+            finally:
+                conn.close()
+        return jsonify({'success': False, 'error': 'Database error'})
+    except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/close_camera', methods=['POST'])

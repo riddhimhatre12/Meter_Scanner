@@ -4,7 +4,7 @@
 
 {% block content %}
 <style>
-/* Commercial Viewfinder Scanner UI */
+/* Viewfinder Scanner UI */
 .scanner-card {
     background-color: var(--surface-card);
     border: 1px solid var(--border-color);
@@ -71,6 +71,42 @@
     text-transform: uppercase;
 }
 
+/* Countdown Overlay directly on stream */
+.stream-countdown-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 15, 46, 0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    backdrop-filter: blur(4px);
+}
+
+.countdown-badge {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand-primary), #3b82f6);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: 800;
+    box-shadow: 0 0 25px rgba(37, 99, 235, 0.8);
+    animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.1); }
+}
+
 .result-card-container {
     max-width: 720px;
     margin: 0 auto;
@@ -118,6 +154,13 @@
                         <span class="alignment-label"><i class="bi bi-bounding-box me-1"></i>Align Digits Here</span>
                     </div>
 
+                    <!-- Visual Stream Countdown Overlay -->
+                    <div id="stream-countdown" class="stream-countdown-overlay" style="display: none;">
+                        <div id="countdown-num" class="countdown-badge mb-2">3</div>
+                        <h6 class="text-white font-weight-700 mb-1">Hold Camera Steady...</h6>
+                        <small class="text-light opacity-75">Multi-scale Tesseract OCR executing in <span id="timer">3</span>s</small>
+                    </div>
+
                     <img src="{{ url_for('video_feed') }}" class="img-fluid" alt="Live Camera Stream">
                 </div>
             </div>
@@ -126,23 +169,25 @@
             <div id="instructions" class="card border-0 p-3 mb-4" style="background-color: var(--bg-main);">
                 <div class="d-flex align-items-center gap-2 mb-2 text-primary font-weight-600">
                     <i class="bi bi-info-circle-fill"></i>
-                    <span>Scanner Operating Instructions:</span>
+                    <span>Scanner Instructions:</span>
                 </div>
                 <ul class="mb-0 small text-secondary ps-3" style="line-height: 1.6;">
-                    <li>Ensure display glass is clean and well-lit without direct light glare.</li>
-                    <li>Align the meter numbers within the central reticle box.</li>
-                    <li>Press **Spacebar** (or click **Capture Meter**) and hold steady for 3 seconds.</li>
+                    <li>Ensure display glass is well-lit and aligned inside the reticle.</li>
+                    <li>Click **Capture Meter** — a **3-second timer** will automatically count down before capturing.</li>
+                    <li>Hold the camera steady for 3 seconds while the countdown finishes.</li>
                 </ul>
             </div>
 
-            <!-- Countdown Processing Overlay -->
-            <div id="countdown" class="text-center mb-4" style="display: none;">
-                <div class="card p-4 mx-auto border-0 shadow-sm" style="max-width: 420px; background-color: var(--bg-main);">
-                    <div class="progress mb-3" style="height: 8px; background-color: var(--border-color);">
+            <!-- Countdown Progress Bar -->
+            <div id="countdown-progress-container" class="text-center mb-4" style="display: none;">
+                <div class="card p-3 mx-auto border-0 shadow-sm" style="max-width: 460px; background-color: var(--bg-main);">
+                    <div class="progress mb-2" style="height: 10px; background-color: var(--border-color);">
                         <div id="capture-progress" class="progress-bar bg-primary progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
                     </div>
-                    <h5 class="mb-1 font-weight-700 text-primary">Hold Camera Steady...</h5>
-                    <p class="text-secondary small mb-0">Executing multi-frame OCR extraction (<span id="timer" class="font-weight-700 text-primary">3</span>s remaining)</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-secondary small">Capturing in <b id="countdown-seconds">3</b> seconds...</span>
+                        <button class="btn btn-xs btn-outline-danger" onclick="cancelCapture()">Cancel</button>
+                    </div>
                 </div>
             </div>
 
@@ -162,9 +207,14 @@
                         </div>
                         <div class="col-md-7">
                             <div id="meter-number-container" class="result-reading-box">
-                                <span class="kpi-label">Extracted Meter Reading</span>
-                                <div id="meter-number" class="display-5 font-weight-800 text-primary my-1">-</div>
-                                <small class="text-secondary"><i class="bi bi-cpu me-1"></i>Verified via Tesseract Contour Preprocessing</small>
+                                <label for="meter-input" class="kpi-label mb-1">Extracted Meter Reading (kWh)</label>
+                                <div class="input-group my-2">
+                                    <input id="meter-input" type="text" class="form-control form-control-lg text-primary font-weight-800" style="font-size: 1.75rem;" placeholder="e.g. 6379">
+                                    <button class="btn btn-primary" type="button" id="saveReadingBtn" onclick="saveManualReading()">
+                                        <i class="bi bi-check-lg me-1"></i> Save Reading
+                                    </button>
+                                </div>
+                                <small class="text-secondary"><i class="bi bi-cpu me-1"></i>Verified via Multi-Pass Tesseract & Auto-Deskew Engine</small>
                             </div>
                             
                             <div id="digits-detail" class="mt-3" style="display:none;">
@@ -179,7 +229,7 @@
             <!-- Action Controls -->
             <div class="text-center pt-2">
                 <button id="captureBtn" class="btn btn-primary btn-lg px-4 me-2">
-                    <i class="bi bi-camera-fill me-1"></i> Capture Meter
+                    <i class="bi bi-camera-fill me-1"></i> Capture Meter (3s Timer)
                 </button>
                 <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-lg">
                     <i class="bi bi-speedometer2 me-1"></i> Dashboard
@@ -193,7 +243,8 @@
 <script>
 let captureStartTime = null;
 let captureTimer = null;
-const CAPTURE_DURATION = 3000; // 3 seconds in milliseconds
+let currentImagePath = null;
+const CAPTURE_DURATION = 3000; // Exactly 3 seconds
 
 document.addEventListener('keydown', function(event) {
     if (event.code === 'Space' && !captureStartTime && document.getElementById('result').style.display === 'none') {
@@ -202,24 +253,22 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
-document.addEventListener('keyup', function(event) {
-    if (event.code === 'Space') {
-        cancelCapture();
-    }
-});
-
 function startCapture() {
-    const countdown = document.getElementById('countdown');
+    const streamCountdown = document.getElementById('stream-countdown');
+    const countdownNum = document.getElementById('countdown-num');
     const timer = document.getElementById('timer');
+    const countdownSecs = document.getElementById('countdown-seconds');
     const progressBar = document.getElementById('capture-progress');
+    const progressContainer = document.getElementById('countdown-progress-container');
     const instructions = document.getElementById('instructions');
     const status = document.getElementById('status');
     const captureBtn = document.getElementById('captureBtn');
     
-    if (!countdown || !timer || !progressBar || !instructions || !status || !captureBtn) return;
+    if (captureStartTime || document.getElementById('result').style.display !== 'none') return;
     
     status.style.display = 'none';
-    countdown.style.display = 'block';
+    streamCountdown.style.display = 'flex';
+    progressContainer.style.display = 'block';
     instructions.style.display = 'none';
     if (captureBtn) captureBtn.disabled = true;
     
@@ -227,11 +276,13 @@ function startCapture() {
     
     captureTimer = setInterval(() => {
         const elapsed = Date.now() - captureStartTime;
-        const remaining = Math.ceil((CAPTURE_DURATION - elapsed) / 1000);
-        const progress = (elapsed / CAPTURE_DURATION) * 100;
+        const remaining = Math.max(0, Math.ceil((CAPTURE_DURATION - elapsed) / 1000));
+        const progress = Math.min(100, (elapsed / CAPTURE_DURATION) * 100);
         
-        timer.textContent = remaining;
-        progressBar.style.width = `${progress}%`;
+        if (countdownNum) countdownNum.textContent = remaining > 0 ? remaining : '0';
+        if (timer) timer.textContent = remaining;
+        if (countdownSecs) countdownSecs.textContent = remaining;
+        if (progressBar) progressBar.style.width = `${progress}%`;
         
         if (elapsed >= CAPTURE_DURATION) {
             completeCapture();
@@ -244,14 +295,11 @@ function cancelCapture() {
         clearInterval(captureTimer);
         captureStartTime = null;
         
-        const countdown = document.getElementById('countdown');
-        const instructions = document.getElementById('instructions');
-        const progressBar = document.getElementById('capture-progress');
+        document.getElementById('stream-countdown').style.display = 'none';
+        document.getElementById('countdown-progress-container').style.display = 'none';
+        document.getElementById('instructions').style.display = 'block';
+        document.getElementById('capture-progress').style.width = '0%';
         const captureBtn = document.getElementById('captureBtn');
-        
-        countdown.style.display = 'none';
-        instructions.style.display = 'block';
-        progressBar.style.width = '0%';
         if (captureBtn) captureBtn.disabled = false;
     }
 }
@@ -260,26 +308,26 @@ function completeCapture() {
     clearInterval(captureTimer);
     captureStartTime = null;
     
-    const countdown = document.getElementById('countdown');
+    document.getElementById('stream-countdown').style.display = 'none';
+    document.getElementById('countdown-progress-container').style.display = 'none';
+    document.getElementById('capture-progress').style.width = '0%';
+    
     const result = document.getElementById('result');
     const status = document.getElementById('status');
     const capturedImage = document.getElementById('captured-image');
     const cameraContainer = document.getElementById('camera-container');
-    const meterNumber = document.getElementById('meter-number');
-    const progressBar = document.getElementById('capture-progress');
+    const meterInput = document.getElementById('meter-input');
     const captureBtn = document.getElementById('captureBtn');
-    
-    countdown.style.display = 'none';
-    progressBar.style.width = '0%';
     
     fetch('/take_photo', { method: 'POST' })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
             status.className = 'alert alert-success border-0 shadow-sm';
-            status.textContent = data.message;
+            status.textContent = data.message || 'Meter image captured and processed!';
+            currentImagePath = data.image_path;
             capturedImage.src = '/static/uploads/' + data.image_path;
-            meterNumber.textContent = (data.meter_number || 'No number detected') + ' kWh';
+            meterInput.value = data.meter_number || '';
             cameraContainer.style.display = 'none';
             result.style.display = 'block';
 
@@ -310,11 +358,52 @@ function completeCapture() {
     });
 }
 
+function saveManualReading() {
+    const meterInput = document.getElementById('meter-input');
+    const status = document.getElementById('status');
+    const saveBtn = document.getElementById('saveReadingBtn');
+    
+    if (!meterInput || !currentImagePath) return;
+    const val = meterInput.value.trim();
+    if (!val) {
+        alert('Please enter a valid numeric reading.');
+        return;
+    }
+    
+    if (saveBtn) saveBtn.disabled = true;
+    
+    fetch('/update_last_reading', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            image_path: currentImagePath,
+            reading_value: val
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (saveBtn) saveBtn.disabled = false;
+        if (data.success) {
+            status.className = 'alert alert-success border-0 shadow-sm';
+            status.textContent = `Reading updated successfully to ${data.reading_value} kWh!`;
+            status.style.display = 'block';
+        } else {
+            alert('Failed to update reading: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(err => {
+        if (saveBtn) saveBtn.disabled = false;
+        alert('Error updating reading: ' + err);
+    });
+}
+
 function retakeScan() {
     document.getElementById('result').style.display = 'none';
     document.getElementById('status').style.display = 'none';
     document.getElementById('camera-container').style.display = 'block';
     document.getElementById('instructions').style.display = 'block';
+    const captureBtn = document.getElementById('captureBtn');
+    if (captureBtn) captureBtn.disabled = false;
 }
 
 window.addEventListener('beforeunload', function() {
@@ -324,10 +413,9 @@ window.addEventListener('beforeunload', function() {
 document.addEventListener('DOMContentLoaded', function() {
     const captureBtn = document.getElementById('captureBtn');
     if (captureBtn) {
-        captureBtn.addEventListener('click', function() {
-            if (!captureStartTime && document.getElementById('result').style.display === 'none') {
-                startCapture();
-            }
+        captureBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            startCapture();
         });
     }
 });
