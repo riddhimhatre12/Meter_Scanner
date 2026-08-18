@@ -469,6 +469,41 @@ function addUserMessage(message) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+function renderMd(text) {
+    if (!text) return '';
+    let str = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+    str = str.replace(/^### (.*$)/gim, '<h5 style="margin:0.5rem 0 0.3rem 0;color:var(--primary-color,#5a6faf);font-weight:700;">$1</h5>');
+    str = str.replace(/^## (.*$)/gim, '<h4 style="margin:0.6rem 0 0.3rem 0;color:var(--primary-color,#5a6faf);font-weight:700;">$1</h4>');
+    str = str.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    str = str.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    str = str.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="display:inline-block;padding:0.25rem 0.6rem;background:rgba(90,111,175,0.15);border-radius:6px;color:#3b82f6;text-decoration:none;font-weight:600;margin-top:0.3rem;">$1</a>');
+
+    const lines = str.split('\n');
+    const processedLines = [];
+    for (let line of lines) {
+        let trimmed = line.trim();
+        const numMatch = trimmed.match(/^(\d+)\.\s+(.*$)/);
+        if (numMatch) {
+            processedLines.push(`<div style="display:flex;align-items:flex-start;gap:0.5rem;margin:0.3rem 0;"><span style="background:rgba(90,111,175,0.2);color:#3b82f6;font-weight:bold;font-size:0.75rem;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${numMatch[1]}</span><span>${numMatch[2]}</span></div>`);
+            continue;
+        }
+        const bulletMatch = trimmed.match(/^[•\-\*]\s+(.*$)/);
+        if (bulletMatch) {
+            processedLines.push(`<div style="display:flex;align-items:flex-start;gap:0.5rem;margin:0.3rem 0;"><span style="color:#3b82f6;font-weight:bold;flex-shrink:0;">•</span><span>${bulletMatch[1]}</span></div>`);
+            continue;
+        }
+        processedLines.push(line);
+    }
+    let res = processedLines.join('\n');
+    res = res.replace(/\n\n/g, '<div style="height:0.5rem;"></div>');
+    res = res.replace(/\n/g, '<br>');
+    return res;
+}
+
 function addBotMessage(message) {
     const chatMessages = document.getElementById('chatMessages');
     const messageDiv = document.createElement('div');
@@ -478,7 +513,7 @@ function addBotMessage(message) {
             <i class="bi bi-robot"></i>
         </div>
         <div class="message-content">
-            ${message}
+            ${renderMd(message)}
         </div>
     `;
     

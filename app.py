@@ -1241,13 +1241,16 @@ def recognize_7segment_digit(roi_binary):
         return None, 0.0
         
     h, w = roi_binary.shape
-    if h < 8 or w < 4:
+    if h < 12 or w < 4:
         return None, 0.0
 
-    # Aspect ratio check for digit 1
+    # Aspect ratio & solidity check for digit 1
     aspect_ratio = w / float(h)
-    if aspect_ratio < 0.35:
-        # Thin vertical line is almost certainly '1'
+    non_zero = cv2.countNonZero(roi_binary)
+    fill_ratio = non_zero / float(w * h)
+    
+    if 0.12 <= aspect_ratio <= 0.35 and fill_ratio > 0.45 and h >= 15:
+        # Solid vertical line with appropriate height is '1'
         return '1', 0.85
 
     # Define the 7 segments regions on normalized ROI (h, w)
@@ -1272,8 +1275,8 @@ def recognize_7segment_digit(roi_binary):
             continue
         total_pixels = seg_roi.size
         count = cv2.countNonZero(seg_roi)
-        # Segment is active if >25% pixels are ON
-        if (count / float(total_pixels)) > 0.25:
+        # Segment is active if >28% pixels are ON
+        if (count / float(total_pixels)) > 0.28:
             on[i] = 1
 
     SEGMENT_LOOKUP = {
@@ -1293,7 +1296,7 @@ def recognize_7segment_digit(roi_binary):
     if tup_on in SEGMENT_LOOKUP:
         return SEGMENT_LOOKUP[tup_on], 0.90
         
-    # Match closest segment lookup pattern if exact match fails
+    # Match closest segment lookup pattern (strict min_diff <= 1)
     best_match_digit = None
     min_diff = 8
     for pattern, digit in SEGMENT_LOOKUP.items():
@@ -1302,7 +1305,7 @@ def recognize_7segment_digit(roi_binary):
             min_diff = diff
             best_match_digit = digit
             
-    if min_diff <= 2:
+    if min_diff <= 1:
         return best_match_digit, 0.70
 
     return None, 0.0
@@ -1337,7 +1340,7 @@ def auto_deskew_image(gray_img):
 def extract_meter_number(image, debug_mode=False):
     """
     Enhanced Multi-Stage Meter OCR Engine with Tesseract Optimization,
-    Auto-Deskewing, Multi-Scale Rescaling, Padding, and Voting.
+    Auto-Deskewing, Multi-Scale Rescaling, Padding, and Anti-Noise Voting.
     
     Args:
         image: Filepath string OR BGR image numpy array.
@@ -1381,7 +1384,28 @@ def extract_meter_number(image, debug_mode=False):
         if debug_mode:
             processed_images['02_cropped_deskewed'] = gray_cropped.copy()
 
-        # 3. Enhanced Preprocessing (Bilateral Filter + CLAHE + Rescaling + Padding)
+        # 3. Bright Display Glass Auto-Crop Strategy (Locates bright phone/LCD screen)
+        display_crop = gray_cropped
+        try:
+            # Find brightest rectangular contour inside cropped image
+            blur_disp = cv2.GaussianBlur(gray_cropped, (7, 7), 0)
+            _, th_bright = cv2.threshold(blur_disp, 180, 255, cv2.THRESH_BINARY)
+            cnts, _ = cv2.findContours(th_bright, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            if cnts:
+                cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
+                for c in cnts:
+                    bx, by, bw, bh = cv2.boundingRect(c)
+                    if bw > w_orig * 0.15 and bh > h_orig * 0.08:
+                        # Pad screen box slightly
+                        pad_x, pad_y = int(bw * 0.05), int(bh * 0.05)
+                        bx1, bx2 = max(0, bx - pad_x), min(gray_cropped.shape[1], bx + bw + pad_x)
+                        by1, by2 = max(0, by - pad_y), min(gray_cropped.shape[0], by + bh + pad_y)
+                        display_crop = gray_cropped[by1:by2, bx1:bx2]
+                        break
+        except Exception:
+            pass
+
+        # 4. Enhanced Preprocessing (Bilateral Filter + CLAHE + Rescaling + Padding)
         denoised = cv2.bilateralFilter(gray_cropped, 9, 75, 75)
         clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
         clahe_applied = clahe.apply(denoised)
@@ -1392,6 +1416,12 @@ def extract_meter_number(image, debug_mode=False):
         # Add 20px white border padding (Tesseract OCR performs significantly better with quiet zones)
         padded_normal = cv2.copyMakeBorder(scaled_img, 20, 20, 20, 20, cv2.BORDER_CONSTANT, value=255)
         padded_inverted = cv2.copyMakeBorder(255 - scaled_img, 20, 20, 20, 20, cv2.BORDER_CONSTANT, value=255)
+
+        # Process display crop specifically
+        display_clahe = clahe.apply(cv2.bilateralFilter(display_crop, 9, 75, 75))
+        h_d, w_d = display_clahe.shape
+        scaled_disp = cv2.resize(display_clahe, (w_d * 2, h_d * 2), interpolation=cv2.INTER_CUBIC)
+        padded_disp_inv = cv2.copyMakeBorder(255 - scaled_disp, 20, 20, 20, 20, cv2.BORDER_CONSTANT, value=255)
 
         # Thresholding methods for contour fallback
         threshold_methods = []
@@ -1411,11 +1441,12 @@ def extract_meter_number(image, debug_mode=False):
         best_overall_confidence = 0.0
         best_method_name = "none"
 
-        # 4. PASS 1: Direct High-Accuracy Tesseract Line OCR across Preprocessing Variants
-        tess_candidates = [] # List of tuples: (digits, confidence, method_name, frequency_score)
+        # 5. PASS 1: Direct High-Accuracy Tesseract Line OCR across Preprocessing Variants
+        tess_candidates = [] # List of tuples: (digits, confidence, method_name)
         
         if pytesseract is not None:
             images_to_test = [
+                ('padded_disp_inv', padded_disp_inv),
                 ('padded_normal', padded_normal),
                 ('padded_inverted', padded_inverted),
                 ('clahe_normal', clahe_applied),
@@ -1430,9 +1461,7 @@ def extract_meter_number(image, debug_mode=False):
                     try:
                         tess_config = f'--oem 3 --psm {psm} -c tessedit_char_whitelist=0123456789'
                         
-                        # Use image_to_data for fine-grained confidence evaluation
                         data = pytesseract.image_to_data(test_img, config=tess_config, output_type=pytesseract.Output.DICT)
-                        
                         texts = data.get('text', [])
                         confs = data.get('conf', [])
                         
@@ -1451,21 +1480,19 @@ def extract_meter_number(image, debug_mode=False):
                     except Exception as e:
                         logger.debug(f"Tesseract test variant {img_name} psm {psm} error: {e}")
 
-        # 5. PASS 2: Contour Digit Segment Recognition (Fallback & Validation)
-        contour_sequence = ""
-        contour_confidences = []
+        # 6. PASS 2: Contour Digit Segment Recognition (Fallback & Validation)
         for method_name, binary_img in threshold_methods:
             contours, _ = cv2.findContours(binary_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             digit_candidates = []
             img_h, img_w = binary_img.shape
-            min_area = 40
-            max_area = (img_h * img_w) * 0.12
+            min_area = 50
+            max_area = (img_h * img_w) * 0.10
 
             for cnt in contours:
                 x, y, w, h = cv2.boundingRect(cnt)
                 area = cv2.contourArea(cnt)
                 aspect_ratio = w / float(h) if h > 0 else 0
-                if (min_area < area < max_area and 0.10 < aspect_ratio < 2.2 and h > 10 and w > 4):
+                if (min_area < area < max_area and 0.12 < aspect_ratio < 2.0 and h > 12 and w > 4):
                     digit_candidates.append((x, y, w, h, area))
 
             if not digit_candidates:
@@ -1504,7 +1531,7 @@ def extract_meter_number(image, debug_mode=False):
                         char_found = seg_char
                         char_conf = seg_conf
 
-                if char_found and char_conf > 0.4:
+                if char_found and char_conf > 0.45:
                     current_sequence += char_found
                     current_confidences.append(char_conf)
 
@@ -1512,37 +1539,44 @@ def extract_meter_number(image, debug_mode=False):
                 avg_conf = sum(current_confidences) / len(current_confidences)
                 tess_candidates.append((current_sequence, avg_conf, f'contour_{method_name}'))
 
-        # 6. Candidate Scoring, Voting, and Selection
+        # 7. Candidate Scoring, Anti-Noise Voting, and Final Selection
         if tess_candidates:
-            # Frequency map to boost readings produced by multiple independent methods/PSMs
             freq_map = {}
             for num, conf, method in tess_candidates:
                 freq_map[num] = freq_map.get(num, 0) + 1
 
             scored_candidates = []
             for num, conf, method in tess_candidates:
-                # Base score = confidence
                 score = conf
                 
                 # Bonus for typical meter reading length (3 to 7 digits)
                 if 3 <= len(num) <= 7:
                     score += 0.25
                 elif len(num) > 7:
-                    score -= 0.30  # Penalize unrealistically long noise sequences
+                    score -= 0.35  # Penalize unrealistically long noise sequences
 
-                # Voting bonus: +0.15 for each repeated match
-                score += (freq_map[num] - 1) * 0.15
+                # HEAVY PENALTY FOR UNIFORM REPEATING DIGITS (e.g. "1111111", "111111", "000000")
+                if len(num) >= 3 and len(set(num)) == 1:
+                    score -= 1.80  # Immediately eliminates fake 1111111 vertical reflection noise!
+
+                # Diversity bonus for varied digit patterns (e.g., "6379")
+                if len(set(num)) >= 2:
+                    score += 0.35
+
+                # Voting bonus: +0.12 for each repeated match
+                score += (freq_map[num] - 1) * 0.12
 
                 scored_candidates.append((num, score, conf, method))
 
             scored_candidates.sort(key=lambda item: item[1], reverse=True)
             best_num, best_score, best_conf, best_method = scored_candidates[0]
             
-            best_detected_digits = best_num
-            best_overall_confidence = min(best_score, 0.99)
-            best_method_name = best_method
+            if best_score > 0.20:
+                best_detected_digits = best_num
+                best_overall_confidence = min(best_score, 0.99)
+                best_method_name = best_method
 
-        # 7. Final Result Formulation
+        # 8. Final Result Formulation
         if best_detected_digits:
             clean_digits = re.sub(r'\D', '', best_detected_digits)
             if len(clean_digits) >= 2:
