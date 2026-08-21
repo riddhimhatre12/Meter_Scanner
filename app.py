@@ -192,6 +192,8 @@ def ensure_schema():
             alterations.append("ALTER TABLE readings ADD COLUMN status TEXT DEFAULT 'auto'")
         if 'notes' not in cols:
             alterations.append("ALTER TABLE readings ADD COLUMN notes TEXT")
+        if 'bill_amount' not in cols:
+            alterations.append("ALTER TABLE readings ADD COLUMN bill_amount REAL")
         for stmt in alterations:
             c.execute(stmt)
         if alterations:
@@ -448,6 +450,82 @@ def calculate_slab_charges(units, season, time_of_day='normal', connection_type=
         remaining_units -= slab_units
     
     return total_charge, slab_breakup
+
+def compute_bill_details_for_reading(c, reading, user_id):
+    """Compute full bill breakdown metrics for a reading record."""
+    reading_id = reading['id']
+    ts = reading['timestamp']
+    
+    # Fetch previous reading for this user prior to ts
+    c.execute("""
+        SELECT * FROM readings 
+        WHERE user_id = ? AND timestamp < ?
+        ORDER BY timestamp DESC
+        LIMIT 1
+    """, (user_id, ts))
+    prev_reading = c.fetchone()
+    
+    def to_float_safe(val):
+        try:
+            return float(val) if val is not None else 0.0
+        except Exception:
+            return 0.0
+
+    current_val = to_float_safe(reading['reading_value'])
+    prev_val = to_float_safe(prev_reading['reading_value']) if prev_reading else 0.0
+    units_consumed = max(0.0, current_val - prev_val)
+    
+    try:
+        reading_date = datetime.strptime(ts, '%Y-%m-%d %H:%M:%S')
+    except Exception:
+        try:
+            reading_date = datetime.strptime(ts.split('.')[0], '%Y-%m-%d %H:%M:%S')
+        except Exception:
+            reading_date = datetime.now()
+            
+    season = get_season(reading_date)
+    connection_type = 'residential'
+    
+    energy_charges, slab_breakup = calculate_slab_charges(
+        units_consumed, 
+        season,
+        'normal',
+        connection_type
+    )
+    
+    fixed_charge = FIXED_CHARGES.get(connection_type, 50.0)
+    fuel_surcharge = energy_charges * FUEL_SURCHARGE
+    electricity_duty = energy_charges * ELECTRICITY_DUTY
+    subtotal = energy_charges + fixed_charge + fuel_surcharge + electricity_duty + METER_RENT
+    gst_amount = subtotal * GST_RATE
+    total_amount = round(subtotal + gst_amount, 2)
+    
+    status_val = 'auto'
+    if 'status' in reading.keys() and reading['status']:
+        status_val = reading['status']
+    
+    return {
+        'reading_id': reading_id,
+        'timestamp': ts,
+        'bill_date': reading_date.strftime('%Y-%m-%d'),
+        'due_date': (reading_date + timedelta(days=3)).strftime('%Y-%m-%d'),
+        'current_reading': current_val,
+        'previous_reading': prev_val,
+        'units_consumed': round(units_consumed, 2),
+        'connection_type': connection_type.title(),
+        'season': season.title(),
+        'slab_breakup': slab_breakup,
+        'energy_charges': round(energy_charges, 2),
+        'fixed_charge': fixed_charge,
+        'meter_rent': METER_RENT,
+        'fixed_and_rent': round(fixed_charge + METER_RENT, 2),
+        'fuel_surcharge': round(fuel_surcharge, 2),
+        'electricity_duty': round(electricity_duty, 2),
+        'subtotal': round(subtotal, 2),
+        'gst_amount': round(gst_amount, 2),
+        'total_amount': total_amount,
+        'status': status_val
+    }
 
 # Chatbot responses with detailed information
 CHATBOT_RESPONSES = {
@@ -1860,6 +1938,13 @@ def take_photo():
                     INSERT INTO readings (user_id, image_path, reading_value, confidence, debug_image, status)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """, (current_user.id, filename, sanitized_value, conf, debug_img_name, status_flag))
+                reading_id = c.lastrowid
+                if sanitized_value and reading_id:
+                    c.execute("SELECT * FROM readings WHERE id = ?", (reading_id,))
+                    new_rec = c.fetchone()
+                    if new_rec:
+                        b_det = compute_bill_details_for_reading(c, new_rec, current_user.id)
+                        c.execute("UPDATE readings SET bill_amount = ? WHERE id = ?", (b_det['total_amount'], reading_id))
                 conn.commit()
             finally:
                 conn.close()
@@ -1890,6 +1975,11 @@ def update_last_reading():
                     SET reading_value = ?, status = 'verified'
                     WHERE user_id = ? AND image_path = ?
                 """, (clean_val, current_user.id, image_path))
+                c.execute("SELECT * FROM readings WHERE user_id = ? AND image_path = ?", (current_user.id, image_path))
+                updated_rec = c.fetchone()
+                if updated_rec:
+                    b_det = compute_bill_details_for_reading(c, updated_rec, current_user.id)
+                    c.execute("UPDATE readings SET bill_amount = ? WHERE id = ?", (b_det['total_amount'], updated_rec['id']))
                 conn.commit()
                 return jsonify({'success': True, 'reading_value': clean_val})
             finally:
@@ -1958,35 +2048,118 @@ def api_readings():
             conn.close()
     return jsonify({'count': len(items), 'items': items})
 
-# AMR: CSV export for readings
-@app.route('/export/readings.csv', methods=['GET'])
+# CSV export endpoints for bills and statements
+@app.route('/export/bills.csv', methods=['GET'])
 @login_required
-def export_readings_csv():
+def export_bills_csv():
     conn = get_db_connection()
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(['id', 'timestamp', 'reading_value', 'confidence', 'status', 'debug_image', 'image_path'])
+    writer.writerow([
+        'Invoice ID', 'Date & Time', 'Current Reading (kWh)', 'Previous Reading (kWh)',
+        'Units Consumed (kWh)', 'Energy Charges (INR)', 'Fixed Charges & Rent (INR)',
+        'Fuel Surcharge (INR)', 'Electricity Duty (INR)', 'Subtotal (INR)',
+        'GST 18% (INR)', 'Total Bill Amount (INR)', 'Status'
+    ])
     if conn is not None:
         try:
             c = conn.cursor()
-            c.execute(
-                """
-                SELECT id, timestamp, reading_value, confidence, status, debug_image, image_path
-                FROM readings
+            c.execute("""
+                SELECT * FROM readings
                 WHERE user_id = ?
                 ORDER BY timestamp DESC
-                """,
-                (current_user.id,)
-            )
-            for row in c.fetchall():
-                writer.writerow([row['id'], row['timestamp'], row['reading_value'], row['confidence'], row['status'], row['debug_image'], row['image_path']])
+            """, (current_user.id,))
+            readings = c.fetchall()
+            for r in readings:
+                bill_details = compute_bill_details_for_reading(c, r, current_user.id)
+                c.execute("UPDATE readings SET bill_amount = ? WHERE id = ?", (bill_details['total_amount'], r['id']))
+                writer.writerow([
+                    f"READING-{r['id']}",
+                    r['timestamp'],
+                    bill_details['current_reading'],
+                    bill_details['previous_reading'],
+                    bill_details['units_consumed'],
+                    f"{bill_details['energy_charges']:.2f}",
+                    f"{bill_details['fixed_and_rent']:.2f}",
+                    f"{bill_details['fuel_surcharge']:.2f}",
+                    f"{bill_details['electricity_duty']:.2f}",
+                    f"{bill_details['subtotal']:.2f}",
+                    f"{bill_details['gst_amount']:.2f}",
+                    f"{bill_details['total_amount']:.2f}",
+                    r['status'] if 'status' in r.keys() and r['status'] else 'auto'
+                ])
+            conn.commit()
         finally:
             conn.close()
     mem = io.BytesIO()
     mem.write(output.getvalue().encode('utf-8'))
     mem.seek(0)
-    filename = f"readings_{current_user.id}.csv"
+    filename = f"electricity_bills_{current_user.id}_{datetime.now().strftime('%Y%m%d')}.csv"
     return send_file(mem, mimetype='text/csv', as_attachment=True, download_name=filename)
+
+@app.route('/export/bill/<int:reading_id>.csv', methods=['GET'])
+@login_required
+def export_single_bill_csv(reading_id):
+    conn = get_db_connection()
+    output = io.StringIO()
+    writer = csv.writer(output)
+    if conn is not None:
+        try:
+            c = conn.cursor()
+            c.execute("SELECT * FROM readings WHERE id = ? AND user_id = ?", (reading_id, current_user.id))
+            reading = c.fetchone()
+            if not reading:
+                flash('Bill statement not found.', 'error')
+                return redirect(url_for('readings'))
+                
+            bill_details = compute_bill_details_for_reading(c, reading, current_user.id)
+            c.execute("UPDATE readings SET bill_amount = ? WHERE id = ?", (bill_details['total_amount'], reading_id))
+            conn.commit()
+            
+            # Statement Header
+            writer.writerow(['BILL INVOICE STATEMENT', f"#READING-{reading_id}"])
+            writer.writerow(['Issue Date', bill_details['bill_date']])
+            writer.writerow(['Due Date', bill_details['due_date']])
+            writer.writerow(['Connection Type', bill_details['connection_type']])
+            writer.writerow(['Season', bill_details['season']])
+            writer.writerow([])
+            
+            # Readings Summary
+            writer.writerow(['READING SUMMARY', 'VALUE'])
+            writer.writerow(['Previous Reading (kWh)', bill_details['previous_reading']])
+            writer.writerow(['Current Reading (kWh)', bill_details['current_reading']])
+            writer.writerow(['Units Consumed (kWh)', bill_details['units_consumed']])
+            writer.writerow([])
+            
+            # Slab Breakdown
+            writer.writerow(['SLAB BREAKDOWN', 'UNITS', 'RATE (INR/kWh)', 'CHARGE (INR)'])
+            for slab in bill_details['slab_breakup']:
+                writer.writerow([f"{slab['start']} - {slab['end']} units", slab['units'], f"{slab['adjusted_rate']:.2f}", f"{slab['charge']:.2f}"])
+            writer.writerow([])
+            
+            # Financial Summary
+            writer.writerow(['FINANCIAL BREAKDOWN', 'AMOUNT (INR)'])
+            writer.writerow(['Energy Charges', f"{bill_details['energy_charges']:.2f}"])
+            writer.writerow(['Fixed Charges & Meter Rent', f"{bill_details['fixed_and_rent']:.2f}"])
+            writer.writerow(['Fuel Surcharge (15%)', f"{bill_details['fuel_surcharge']:.2f}"])
+            writer.writerow(['Electricity Duty (16%)', f"{bill_details['electricity_duty']:.2f}"])
+            writer.writerow(['Subtotal Before Tax', f"{bill_details['subtotal']:.2f}"])
+            writer.writerow(['GST (18%)', f"{bill_details['gst_amount']:.2f}"])
+            writer.writerow(['TOTAL AMOUNT DUE (INR)', f"{bill_details['total_amount']:.2f}"])
+            
+        finally:
+            conn.close()
+            
+    mem = io.BytesIO()
+    mem.write(output.getvalue().encode('utf-8'))
+    mem.seek(0)
+    filename = f"bill_statement_reading_{reading_id}.csv"
+    return send_file(mem, mimetype='text/csv', as_attachment=True, download_name=filename)
+
+@app.route('/export/readings.csv', methods=['GET'])
+@login_required
+def export_readings_csv():
+    return export_bills_csv()
 
 @app.route('/delete_reading/<int:reading_id>', methods=['POST'])
 def delete_reading(reading_id):
@@ -2113,6 +2286,7 @@ def bill():
     return redirect(url_for('dashboard'))
 
 @app.route('/generate_bill/<int:reading_id>')
+@login_required
 def generate_bill(reading_id):
     conn = get_db_connection()
     if conn is not None:
@@ -2120,80 +2294,49 @@ def generate_bill(reading_id):
             c = conn.cursor()
             c.execute("SELECT * FROM readings WHERE id = ?", (reading_id,))
             reading = c.fetchone()
+            if not reading:
+                flash('Reading statement not found.', 'error')
+                return redirect(url_for('readings'))
+                
+            bill_details = compute_bill_details_for_reading(c, reading, current_user.id)
             
-            # Get previous reading
+            # Persist calculated bill_amount in database
+            c.execute("UPDATE readings SET bill_amount = ? WHERE id = ?", (bill_details['total_amount'], reading_id))
+            conn.commit()
+            
+            # Calculate 3-month average
             c.execute("""
-                SELECT * FROM readings 
-                WHERE user_id = ? AND timestamp < ?
-                ORDER BY timestamp DESC
-                LIMIT 1
-            """, (reading['user_id'], reading['timestamp']))
-            prev_reading = c.fetchone()
-            
-            # Calculate units consumed (robust, non-negative)
-            def to_float_safe(val):
-                try:
-                    return float(val)
-                except Exception:
-                    return 0.0
-            current_val = to_float_safe(reading['reading_value'])
-            prev_val = to_float_safe(prev_reading['reading_value']) if prev_reading else 0.0
-            units_consumed = max(0.0, current_val - prev_val)
-            
-            # Get season and connection type
-            reading_date = datetime.strptime(reading['timestamp'], '%Y-%m-%d %H:%M:%S')
-            season = get_season(reading_date)
-            connection_type = 'residential'  # You can make this dynamic based on user profile
-            
-            # Calculate charges
-            energy_charges, slab_breakup = calculate_slab_charges(
-                units_consumed, 
-                season,
-                'normal',  # Default to normal time-of-day rate
-                connection_type
-            )
-            
-            # Calculate additional charges
-            fixed_charge = FIXED_CHARGES[connection_type]
-            fuel_surcharge = energy_charges * FUEL_SURCHARGE
-            electricity_duty = energy_charges * ELECTRICITY_DUTY
-            subtotal = energy_charges + fixed_charge + fuel_surcharge + electricity_duty + METER_RENT
-            gst_amount = subtotal * GST_RATE
-            total_amount = subtotal + gst_amount
-            
-            # Calculate monthly average
-            c.execute("""
-                SELECT AVG(reading_value) as avg_reading
+                SELECT AVG(CAST(reading_value AS REAL)) as avg_reading
                 FROM readings
                 WHERE user_id = ?
                 AND timestamp >= date(?, '-3 months')
-            """, (reading['user_id'], reading['timestamp']))
+            """, (current_user.id, reading['timestamp']))
             avg_result = c.fetchone()
-            monthly_average = avg_result['avg_reading'] if avg_result['avg_reading'] else 0
+            monthly_average = avg_result['avg_reading'] if avg_result and avg_result['avg_reading'] else 0
             
             bill_data = {
                 'reading_id': reading_id,
-                'current_reading': reading['reading_value'],
-                'previous_reading': prev_reading['reading_value'] if prev_reading else 0,
-                'units_consumed': round(units_consumed, 2),
+                'current_reading': bill_details['current_reading'],
+                'previous_reading': bill_details['previous_reading'],
+                'units_consumed': bill_details['units_consumed'],
                 'monthly_average': round(monthly_average, 2),
-                'connection_type': connection_type.title(),
-                'season': season.title(),
-                'season_multiplier': SEASONAL_RATES[season],
-                'slab_breakup': slab_breakup,
-                'energy_charges': round(energy_charges, 2),
-                'fixed_charge': fixed_charge,
-                'meter_rent': METER_RENT,
+                'connection_type': bill_details['connection_type'],
+                'season': bill_details['season'],
+                'season_multiplier': SEASONAL_RATES.get(bill_details['season'].lower(), 1.0),
+                'slab_breakup': bill_details['slab_breakup'],
+                'energy_charges': bill_details['energy_charges'],
+                'fixed_charge': bill_details['fixed_charge'],
+                'meter_rent': bill_details['meter_rent'],
                 'fuel_surcharge_rate': FUEL_SURCHARGE * 100,
-                'fuel_surcharge': round(fuel_surcharge, 2),
+                'fuel_surcharge': bill_details['fuel_surcharge'],
                 'electricity_duty_rate': ELECTRICITY_DUTY * 100,
-                'electricity_duty': round(electricity_duty, 2),
-                'subtotal': round(subtotal, 2),
+                'electricity_duty': bill_details['electricity_duty'],
+                'subtotal': bill_details['subtotal'],
                 'gst_rate': GST_RATE * 100,
-                'gst_amount': round(gst_amount, 2),
-                'total_amount': round(total_amount, 2),
-                'bill_date': reading_date.strftime('%Y-%m-%d'),
-                'due_date': (reading_date + timedelta(days=3)).strftime('%Y-%m-%d'),
+                'gst_amount': bill_details['gst_amount'],
+                'total_amount': bill_details['total_amount'],
+                'bill_date': bill_details['bill_date'],
+                'due_date': bill_details['due_date'],
                 'payment_options': [
                     {'method': 'UPI', 'discount': '1%'},
                     {'method': 'Credit Card', 'surcharge': '2%'},
@@ -2204,6 +2347,8 @@ def generate_bill(reading_id):
             return render_template('bill.html', bill=bill_data)
         finally:
             conn.close()
+    flash('Database connection error.', 'error')
+    return redirect(url_for('readings'))
 
 # New Features Routes
 @app.route('/api/bill_calculator', methods=['POST'])
@@ -2518,50 +2663,12 @@ def smart_home():
 @app.route('/export_data')
 @login_required
 def export_data():
-    """Export data in various formats"""
+    """Export data in CSV or PDF format"""
     format_type = request.args.get('format', 'csv')
-    
-    conn = get_db_connection()
-    try:
-        c = conn.cursor()
-        c.execute("""
-            SELECT reading_value, confidence, status, notes, timestamp
-            FROM readings 
-            WHERE user_id = ? 
-            ORDER BY timestamp DESC
-        """, (current_user.id,))
-        
-        readings = c.fetchall()
-        
-        if format_type == 'csv':
-            # Create CSV
-            output = io.StringIO()
-            writer = csv.writer(output)
-            writer.writerow(['Reading Value', 'Confidence', 'Status', 'Notes', 'Timestamp'])
-            
-            for reading in readings:
-                writer.writerow([
-                    reading['reading_value'],
-                    reading['confidence'],
-                    reading['status'],
-                    reading['notes'],
-                    reading['timestamp']
-                ])
-            
-            mem = io.BytesIO()
-            mem.write(output.getvalue().encode('utf-8'))
-            mem.seek(0)
-            
-            filename = f"meter_readings_{current_user.id}_{datetime.now().strftime('%Y%m%d')}.csv"
-            return send_file(mem, mimetype='text/csv', as_attachment=True, download_name=filename)
-        
-        elif format_type == 'pdf':
-            # PDF export would require additional library like ReportLab
-            flash('PDF export coming soon!', 'info')
-            return redirect(url_for('dashboard'))
-            
-    finally:
-        conn.close()
+    if format_type == 'pdf':
+        flash('PDF export coming soon! Use Print/PDF on Bill page.', 'info')
+        return redirect(url_for('dashboard'))
+    return export_bills_csv()
 
 @app.route('/api/budgets', methods=['GET', 'POST'])
 @login_required

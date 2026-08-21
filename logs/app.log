@@ -720,3 +720,35 @@ AttributeError: 'NoneType' object has no attribute 'read'
 2026-08-18 20:36:53,185 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
 2026-08-18 20:57:49,183 INFO meter_scanner: Application started. Database initialized.
 2026-08-18 20:57:49,185 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-18 22:45:44,837 INFO meter_scanner: Application started. Database initialized.
+2026-08-18 22:45:44,844 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-21 11:42:49,043 INFO meter_scanner: Application started. Database initialized.
+2026-08-21 11:42:49,045 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-21 11:42:49,820 INFO meter_scanner: Application started. Database initialized.
+2026-08-21 11:42:49,822 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-21 11:56:12,775 INFO meter_scanner: Application started. Database initialized.
+2026-08-21 11:56:12,778 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-21 11:59:56,710 INFO meter_scanner: Application started. Database initialized.
+2026-08-21 11:59:56,712 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-21 12:03:27,541 INFO meter_scanner: Application started. Database initialized.
+2026-08-21 12:03:27,543 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-21 12:09:34,880 INFO meter_scanner: Application started. Database initialized.
+2026-08-21 12:09:34,881 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-21 12:46:03,534 INFO meter_scanner: Application started. Database initialized.
+2026-08-21 12:46:03,537 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-21 17:59:02,751 INFO meter_scanner: Application started. Database initialized.
+2026-08-21 17:59:02,754 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-21 18:02:06,360 INFO meter_scanner: Application started. Database initialized.
+2026-08-21 18:02:06,362 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-21 21:53:00,768 INFO meter_scanner: Application started. Database initialized.
+2026-08-21 21:53:00,783 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-21 21:53:07,617 INFO meter_scanner: Application started. Database initialized.
+2026-08-21 21:53:07,618 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-21 21:53:15,442 INFO meter_scanner: Application started. Database initialized.
+2026-08-21 21:53:15,443 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-21 21:53:24,278 INFO meter_scanner: Application started. Database initialized.
+2026-08-21 21:53:24,280 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-21 21:53:37,047 INFO meter_scanner: Application started. Database initialized.
+2026-08-21 21:53:37,048 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-21 21:53:45,809 INFO meter_scanner: Application started. Database initialized.
+2026-08-21 21:53:45,810 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).

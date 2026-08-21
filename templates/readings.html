@@ -35,11 +35,11 @@
         <p class="text-secondary small mb-0">Historical OCR scans, detected kWh values, and bill generation logs</p>
     </div>
     <div class="d-flex align-items-center gap-2">
-        <a href="{{ url_for('export_data') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-download"></i> Export CSV
+        <a href="{{ url_for('export_bills_csv') }}" class="btn btn-success btn-sm">
+            <i class="bi bi-file-earmark-spreadsheet-fill me-1"></i> Download Bills CSV
         </a>
         <a href="{{ url_for('capture') }}" class="btn btn-primary btn-sm">
-            <i class="bi bi-camera-fill"></i> New Scan
+            <i class="bi bi-camera-fill me-1"></i> New Scan
         </a>
     </div>
 </div>
@@ -74,9 +74,12 @@
                     <div class="p-3 pt-0">
                         <div class="d-grid gap-2">
                             <a href="{{ url_for('generate_bill', reading_id=reading.id) }}" class="btn btn-primary btn-sm">
-                                <i class="bi bi-receipt"></i> Generate Statement
+                                <i class="bi bi-receipt"></i> Generate & View Bill
                             </a>
                             <div class="d-flex gap-2">
+                                <a href="{{ url_for('export_single_bill_csv', reading_id=reading.id) }}" class="btn btn-outline-success btn-sm flex-grow-1" title="Download Bill CSV">
+                                    <i class="bi bi-file-earmark-spreadsheet"></i> CSV
+                                </a>
                                 <button class="btn btn-outline-secondary btn-sm flex-grow-1 view-image" data-image="{{ reading.image_path }}">
                                     <i class="bi bi-zoom-in"></i> Preview
                                 </button>
