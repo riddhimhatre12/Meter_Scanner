@@ -857,12 +857,22 @@ def login():
 
 def get_google_redirect_uri():
     configured = os.environ.get('GOOGLE_REDIRECT_URI')
+    host = request.headers.get('X-Forwarded-Host', request.host)
+    scheme = request.headers.get('X-Forwarded-Proto', request.scheme)
+    is_localhost = ('localhost' in host or '127.0.0.1' in host)
+    
     if configured and configured.strip():
-        return configured.strip()
-    redirect_uri = url_for('google_callback', _external=True)
-    if '127.0.0.1' in redirect_uri:
-        redirect_uri = redirect_uri.replace('127.0.0.1', 'localhost')
-    return redirect_uri
+        configured_uri = configured.strip()
+        if is_localhost or ('localhost' not in configured_uri and '127.0.0.1' not in configured_uri):
+            return configured_uri
+
+    if not is_localhost:
+        return f"{scheme}://{host}/google/callback"
+    else:
+        redirect_uri = url_for('google_callback', _external=True)
+        if '127.0.0.1' in redirect_uri:
+            redirect_uri = redirect_uri.replace('127.0.0.1', 'localhost')
+        return redirect_uri
 
 @app.route('/google_login')
 def google_login():
