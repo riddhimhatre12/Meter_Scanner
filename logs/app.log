@@ -756,3 +756,23 @@ AttributeError: 'NoneType' object has no attribute 'read'
 2026-08-21 22:20:21,229 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
 2026-08-21 22:20:21,865 INFO meter_scanner: Application started. Database initialized.
 2026-08-21 22:20:21,867 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-21 22:23:27,141 INFO meter_scanner: Application started. Database initialized.
+2026-08-21 22:23:27,142 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-21 22:26:42,493 INFO meter_scanner: Application started. Database initialized.
+2026-08-21 22:26:42,495 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-22 18:34:12,849 INFO meter_scanner: Application started. Database initialized.
+2026-08-22 18:34:12,851 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-22 18:35:44,244 INFO meter_scanner: Application started. Database initialized.
+2026-08-22 18:35:44,248 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-22 18:35:45,394 INFO meter_scanner: Application started. Database initialized.
+2026-08-22 18:35:45,396 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-22 18:36:32,422 INFO meter_scanner: Google OAuth redirect_uri: http://localhost:5000/google/callback
+2026-08-22 18:36:43,011 ERROR meter_scanner: Token exchange failed: 401 Client Error: Unauthorized for url: https://oauth2.googleapis.com/token
+2026-08-22 18:37:19,569 INFO meter_scanner: Application started. Database initialized.
+2026-08-22 18:37:19,570 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-22 18:45:17,924 INFO meter_scanner: Application started. Database initialized.
+2026-08-22 18:45:17,926 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-22 18:45:18,857 INFO meter_scanner: Application started. Database initialized.
+2026-08-22 18:45:18,858 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-22 18:46:36,229 INFO meter_scanner: Google OAuth redirect_uri: http://localhost:5000/google/callback
+2026-08-22 18:51:39,337 INFO meter_scanner: Google OAuth redirect_uri: http://localhost:5000/google/callback

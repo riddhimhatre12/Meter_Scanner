@@ -855,10 +855,20 @@ def login():
     
     return render_template('login.html')
 
+def get_google_redirect_uri():
+    configured = os.environ.get('GOOGLE_REDIRECT_URI')
+    if configured and configured.strip():
+        return configured.strip()
+    redirect_uri = url_for('google_callback', _external=True)
+    if '127.0.0.1' in redirect_uri:
+        redirect_uri = redirect_uri.replace('127.0.0.1', 'localhost')
+    return redirect_uri
+
 @app.route('/google_login')
 def google_login():
     """Redirect user to Google OAuth consent screen."""
-    if GOOGLE_CLIENT_ID == 'your-google-client-id':
+    client_id = os.environ.get('GOOGLE_CLIENT_ID', GOOGLE_CLIENT_ID)
+    if not client_id or client_id == 'your-google-client-id':
         flash('Google login is not configured yet. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.', 'warning')
         return redirect(url_for('login'))
     try:
@@ -874,11 +884,10 @@ def google_login():
     state = _secrets.token_urlsafe(16)
     session['oauth_state'] = state
 
-    redirect_uri = url_for('google_callback', _external=True)
-    if '127.0.0.1' in redirect_uri:
-        redirect_uri = redirect_uri.replace('127.0.0.1', 'localhost')
+    redirect_uri = get_google_redirect_uri()
+    logger.info(f"Google OAuth redirect_uri: {redirect_uri}")
     params = {
-        'client_id': GOOGLE_CLIENT_ID,
+        'client_id': client_id,
         'redirect_uri': redirect_uri,
         'response_type': 'code',
         'scope': 'openid email profile',
@@ -892,6 +901,9 @@ def google_login():
 @app.route('/google/callback')
 def google_callback():
     """Handle Google OAuth callback and log the user in."""
+    client_id = os.environ.get('GOOGLE_CLIENT_ID', GOOGLE_CLIENT_ID)
+    client_secret = os.environ.get('GOOGLE_CLIENT_SECRET', GOOGLE_CLIENT_SECRET)
+
     # Verify state to prevent CSRF
     if request.args.get('state') != session.pop('oauth_state', None):
         flash('Invalid OAuth state. Please try again.', 'danger')
@@ -913,16 +925,14 @@ def google_callback():
         return redirect(url_for('login'))
 
     # Exchange code for tokens
-    redirect_uri = url_for('google_callback', _external=True)
-    if '127.0.0.1' in redirect_uri:
-        redirect_uri = redirect_uri.replace('127.0.0.1', 'localhost')
+    redirect_uri = get_google_redirect_uri()
     try:
         token_resp = requests.post(
             token_endpoint,
             data={
                 'code': code,
-                'client_id': GOOGLE_CLIENT_ID,
-                'client_secret': GOOGLE_CLIENT_SECRET,
+                'client_id': client_id,
+                'client_secret': client_secret,
                 'redirect_uri': redirect_uri,
                 'grant_type': 'authorization_code',
             },
@@ -931,8 +941,14 @@ def google_callback():
         token_resp.raise_for_status()
         tokens = token_resp.json()
     except Exception as e:
-        logger.error(f'Token exchange failed: {e}')
-        flash('Google login failed during token exchange. Please try again.', 'danger')
+        err_detail = str(e)
+        try:
+            if 'token_resp' in locals() and hasattr(token_resp, 'text'):
+                err_detail += f" ({token_resp.text})"
+        except Exception:
+            pass
+        logger.error(f'Token exchange failed: {err_detail}')
+        flash('Google login failed during token exchange. Please check your Client Secret in .env.', 'danger')
         return redirect(url_for('login'))
 
     # Fetch user info
@@ -957,55 +973,61 @@ def google_callback():
     email      = userinfo.get('email', '')
     given_name = userinfo.get('given_name', '')
     family_name= userinfo.get('family_name', '')
-    # Build a unique username from the email local part
-    base_username = email.split('@')[0].replace('.', '_').lower()
+    base_username = email.split('@')[0].replace('.', '_').lower() if email else f"user_{google_id[:8]}"
 
     conn = get_db_connection()
     try:
         c = conn.cursor()
-        # Try find by google_id first
+        # 1. Try find by google_id first
         c.execute("SELECT * FROM users WHERE google_id = ?", (google_id,))
         user_row = c.fetchone()
 
         if not user_row:
-            # Try find by email
+            # 2. Try find by email
             if email:
                 c.execute("SELECT * FROM users WHERE email = ?", (email,))
                 user_row = c.fetchone()
-            if not user_row:
-                # Try find by username derived from email
-                c.execute("SELECT * FROM users WHERE username = ?", (base_username,))
-                user_row = c.fetchone()
+
             if user_row:
                 # Link existing account with Google
                 c.execute(
-                    "UPDATE users SET google_id=?, first_name=?, last_name=?, email=? WHERE id=?",
+                    "UPDATE users SET google_id = ?, first_name = COALESCE(NULLIF(first_name, ''), ?), last_name = COALESCE(NULLIF(last_name, ''), ?), email = COALESCE(NULLIF(email, ''), ?) WHERE id = ?",
                     (google_id, given_name, family_name, email, user_row['id'])
                 )
                 conn.commit()
+                c.execute("SELECT * FROM users WHERE id = ?", (user_row['id'],))
+                user_row = c.fetchone()
             else:
-                # Create new account — no password needed for OAuth users
-                from werkzeug.security import generate_password_hash as _gph
+                # 3. Create new user account for Google Signup
                 import secrets as _s
+                from werkzeug.security import generate_password_hash as _gph
+                final_username = base_username
+                c.execute("SELECT id FROM users WHERE username = ?", (final_username,))
+                if c.fetchone():
+                    final_username = f"{base_username}_{_s.token_hex(3)}"
+
                 dummy_pw = _gph(_s.token_hex(24))
                 c.execute(
                     "INSERT INTO users (username, password, google_id, email, first_name, last_name) VALUES (?,?,?,?,?,?)",
-                    (base_username, dummy_pw, google_id, email, given_name, family_name)
+                    (final_username, dummy_pw, google_id, email, given_name, family_name)
                 )
                 conn.commit()
-                c.execute("SELECT * FROM users WHERE username = ?", (base_username,))
+                new_id = c.lastrowid
+                c.execute("SELECT * FROM users WHERE id = ?", (new_id,))
                 user_row = c.fetchone()
 
-
+        keys = user_row.keys()
         user_obj = User(
-            id=user_row['id'], username=user_row['username'], password=user_row['password'],
-            email=email,
-            first_name=given_name,
-            last_name=family_name,
-            google_id=google_id,
+            id=user_row['id'],
+            username=user_row['username'],
+            password=user_row['password'],
+            email=user_row['email'] if 'email' in keys else email,
+            first_name=user_row['first_name'] if 'first_name' in keys else given_name,
+            last_name=user_row['last_name'] if 'last_name' in keys else family_name,
+            google_id=user_row['google_id'] if 'google_id' in keys else google_id,
         )
         login_user(user_obj)
-        flash(f'Welcome, {given_name or user_row["username"]}! Logged in with Google.', 'success')
+        flash(f'Welcome, {given_name or user_row["username"]}! Successfully signed in with Google.', 'success')
         return redirect(url_for('dashboard'))
     except Exception as e:
         logger.error(f'Google OAuth DB error: {e}')
