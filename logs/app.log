@@ -776,3 +776,7 @@ AttributeError: 'NoneType' object has no attribute 'read'
 2026-08-22 18:45:18,858 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
 2026-08-22 18:46:36,229 INFO meter_scanner: Google OAuth redirect_uri: http://localhost:5000/google/callback
 2026-08-22 18:51:39,337 INFO meter_scanner: Google OAuth redirect_uri: http://localhost:5000/google/callback
+2026-08-22 19:36:23,712 INFO meter_scanner: Application started. Database initialized.
+2026-08-22 19:36:23,717 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-24 18:49:48,281 INFO meter_scanner: Application started. Database initialized.
+2026-08-24 18:49:48,284 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
