@@ -818,6 +818,12 @@ def chat():
         logger.error(f'Chat error: {e}')
         return jsonify({'response': 'An error occurred. Please try again.', 'error': str(e)}), 500
 
+@app.route('/')
+def index():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    return redirect(url_for('login'))
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
