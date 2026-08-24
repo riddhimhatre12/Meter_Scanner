@@ -2,6 +2,8 @@
 
 > **Smart AI-Powered Utility Meter Tracking, OCR Scanning & Bill Management Platform**
 
+🌐 **Live Application**: [https://meter-scanner-s4nu.onrender.com](https://meter-scanner-s4nu.onrender.com)
+
 Meter Scanner Pro is an intelligent web application designed to help homeowners, commercial property managers, and utility administrators seamlessly scan electricity, water, and gas meters using their device's camera, extract readings via Optical Character Recognition (OCR), estimate bills using tiered tariff slabs, analyze consumption trends, and interact with an AI assistant (**MeterBot**).
 
 ---
