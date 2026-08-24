@@ -780,3 +780,5 @@ AttributeError: 'NoneType' object has no attribute 'read'
 2026-08-22 19:36:23,717 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
 2026-08-24 18:49:48,281 INFO meter_scanner: Application started. Database initialized.
 2026-08-24 18:49:48,284 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
+2026-08-24 18:58:08,475 INFO meter_scanner: Application started. Database initialized.
+2026-08-24 18:58:08,477 INFO meter_scanner: Schema ensured (confidence/debug_image/status/notes).
